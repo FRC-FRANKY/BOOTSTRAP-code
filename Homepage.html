@@ -72,6 +72,9 @@
           <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
           <li class="nav-item"><a class="nav-link" href="#testimonials">Testimonials</a></li>
           <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+          <li class="nav-item ms-lg-2">
+            <button type="button" id="logoutBtn" class="btn btn-outline-danger btn-sm">Log out</button>
+          </li>
         </ul>
       </div>
     </div>
@@ -262,6 +265,24 @@
   <script>
     (function () {
       'use strict';
+      // Redirect to login if not logged in
+      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+      if (!isLoggedIn) {
+        window.location.replace('login.html');
+        return;
+      }
+      // Logout confirmation and redirect to login page
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function () {
+          const confirmLogout = confirm('Do you want to log out?');
+          if (confirmLogout) {
+            localStorage.removeItem('isLoggedIn');
+            window.location.href = 'login.html';
+          }
+        });
+      }
+
       var forms = document.querySelectorAll('form.needs-validation');
       Array.from(forms).forEach(function (form) {
         form.addEventListener('submit', function (event) {

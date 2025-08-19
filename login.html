@@ -57,9 +57,15 @@
               <h5 class="mb-0">Account Access</h5>
             </div>
             <p class="text-muted mb-0 mt-2">Welcome back! Sign in to continue.</p>
-          </div>
+            
 
           <div class="card-body pt-0">
+            <div class="alert alert-info py-2 mb-3 small" role="alert">
+              <strong>Sample account</strong>: Username <code>demo</code> or Email <code>demo@example.com</code>, Password <code>password123</code>
+            </div>
+            <div id="loginError" class="alert alert-danger d-none py-2 mb-3 small" role="alert">
+              Invalid credentials. Try <code>demo@example.com</code> (or <code>demo</code>) with password <code>password123</code>.
+            </div>
             <form class="needs-validation" novalidate action="#" method="post" autocomplete="on">
               <!-- Email / Username -->
               <div class="mb-3">
@@ -147,13 +153,33 @@
     // Simple client-side validation toggle
     (function () {
       'use strict';
+      // Sample account
+      const SAMPLE_USERNAME = 'demo';
+      const SAMPLE_EMAIL = 'demo@example.com';
+      const SAMPLE_PASSWORD = 'password123';
       const form = document.querySelector('form.needs-validation');
       form.addEventListener('submit', function (event) {
+        event.preventDefault();
         if (!form.checkValidity()) {
-          event.preventDefault();
           event.stopPropagation();
+          form.classList.add('was-validated');
+          return;
         }
         form.classList.add('was-validated');
+        const inputVal = document.getElementById('email').value.trim();
+        const pwdVal = document.getElementById('password').value;
+        const matchesUser = inputVal.toLowerCase() === SAMPLE_EMAIL || inputVal === SAMPLE_USERNAME;
+        const matchesPass = pwdVal === SAMPLE_PASSWORD;
+        const errorBox = document.getElementById('loginError');
+        if (!(matchesUser && matchesPass)) {
+          errorBox.classList.remove('d-none');
+          return;
+        }
+        errorBox.classList.add('d-none');
+        // Mark as logged in and go to homepage
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('loggedInUser', inputVal);
+        window.location.href = 'Homepage.html';
       }, false);
 
       // Password visibility toggle
