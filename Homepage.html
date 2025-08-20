@@ -52,12 +52,30 @@
 
     /* Footer tweaks for small screens */
     .footer { background: #f8f9fa; }
+
+    /* Modern UI tweaks */
+    .navbar-glass {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: saturate(180%) blur(12px);
+      -webkit-backdrop-filter: saturate(180%) blur(12px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .card {
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 .75rem 1.5rem rgba(0,0,0,.08);
+    }
+
+    .btn.cta-btn { box-shadow: 0 .5rem 1rem rgba(0,0,0,.10); }
   </style>
 </head>
 <body>
 
   <!-- Navbar (mobile-friendly) -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm">
+  <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm navbar-glass">
     <div class="container">
       <a class="navbar-brand fw-bold" href="#">Bootstrap Company</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"
@@ -72,6 +90,9 @@
           <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
           <li class="nav-item"><a class="nav-link" href="#testimonials">Testimonials</a></li>
           <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+          <li class="nav-item d-none d-lg-flex align-items-center me-2">
+            <span id="userGreeting" class="navbar-text text-muted small"></span>
+          </li>
           <li class="nav-item ms-lg-2">
             <button type="button" id="logoutBtn" class="btn btn-outline-danger btn-sm">Log out</button>
           </li>
@@ -270,6 +291,12 @@
       if (!isLoggedIn) {
         window.location.replace('login.html');
         return;
+      }
+      // Navbar greeting
+      const storedUser = localStorage.getItem('loggedInUser');
+      const greet = document.getElementById('userGreeting');
+      if (greet && storedUser) {
+        greet.textContent = `Hello, ${storedUser}!`;
       }
       // Logout confirmation and redirect to login page
       const logoutBtn = document.getElementById('logoutBtn');
