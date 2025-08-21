@@ -1,0 +1,62 @@
+:root {
+  --brand-start: #0d6efd;
+  --brand-end: #6610f2;
+}
+
+/* Mobile-friendly hero */
+.hero {
+  background: linear-gradient(135deg, var(--brand-start), var(--brand-end));
+  color: white;
+  padding: 64px 16px; /* tighter on mobile */
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  text-align: center;
+}
+.hero h1 { font-size: 2rem; line-height: 1.2; }
+.hero p { font-size: 1rem; }
+
+/* Improve touch targets on mobile */
+.cta-btn { min-width: 160px; padding: .75rem 1rem; }
+
+.feature-icon {
+  width: 48px; height: 48px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: #e9f0ff; color: #0d6efd;
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
+
+/* Section headings spacing on small screens */
+section { padding-top: 4rem; padding-bottom: 4rem; }
+@media (min-width: 768px) {
+  .hero { padding: 84px 0; }
+  .hero h1 { font-size: 3rem; }
+  .hero p { font-size: 1.125rem; }
+}
+
+/* Cards spacing adjustments for very small screens */
+.card { border: 0; border-radius: 0.5rem; }
+.card .card-body { padding: 1rem; }
+
+/* Footer tweaks for small screens */
+.footer { background: #f8f9fa; }
+
+/* Modern UI tweaks */
+.navbar-glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.card {
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 .75rem 1.5rem rgba(0,0,0,.08);
+}
+
+.btn.cta-btn { box-shadow: 0 .5rem 1rem rgba(0,0,0,.10); }

@@ -11,26 +11,7 @@
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
-    <style>
-        .role-card {
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-            .role-card:hover {
-                border-color: #0d6efd;
-            }
-
-            .role-card.selected {
-                border-color: #0d6efd;
-                background-color: #e7f1ff;
-            }
-
-        .bi {
-            font-size: 2rem;
-        }
-    </style>
+    <link href="css/registration.css" rel="stylesheet">
 </head>
 <body class="bg-light">
 
@@ -107,31 +88,7 @@
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script>
-        // Default selection
-        selectRole('employee');
-
-        function selectRole(role) {
-            document.getElementById('role').value = role;
-
-            const employeeCard = document.getElementById('employeeCard');
-            const employerCard = document.getElementById('employerCard');
-            const employeeFields = document.getElementById('employeeFields');
-            const employerFields = document.getElementById('employerFields');
-
-            if (role === 'employee') {
-                employeeCard.classList.add('selected');
-                employerCard.classList.remove('selected');
-                employeeFields.style.display = 'block';
-                employerFields.style.display = 'none';
-            } else {
-                employerCard.classList.add('selected');
-                employeeCard.classList.remove('selected');
-                employerFields.style.display = 'block';
-                employeeFields.style.display = 'none';
-            }
-        }
-    </script>
+    <script src="js/registration.js"></script>
 
 </body>
 </html>
