@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>My Bootstrap Homepage - Mobile Ready</title>
+  <title>JobFilter - Job Application Filter & Skill Matcher</title>
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="css/home.css" rel="stylesheet">
@@ -13,7 +13,7 @@
   <!-- Navbar (mobile-friendly) -->
   <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm navbar-glass">
     <div class="container">
-      <a class="navbar-brand fw-bold" href="#">Bootstrap Company</a>
+             <a class="navbar-brand fw-bold" href="#">JobFilter</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"
         aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -21,16 +21,12 @@
 
       <div class="collapse navbar-collapse" id="navMenu">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link active" href="index.html">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="features.html">Features</a></li>
-          <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
-          <li class="nav-item"><a class="nav-link" href="testimonials.html">Testimonials</a></li>
-          <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
-          <li class="nav-item d-none d-lg-flex align-items-center me-2">
-            <span id="userGreeting" class="navbar-text text-muted small"></span>
+     
+          <li class="nav-item ms-lg-2 d-none" id="loginNav">
+            <a href="login.html" class="btn btn-primary btn-sm">Login</a>
           </li>
-          <li class="nav-item ms-lg-2">
-            <button type="button" id="logoutBtn" class="btn btn-outline-danger btn-sm">Log out</button>
+          <li class="nav-item ms-lg-2 d-none" id="signupNav">
+            <a href="Registration.html" class="btn btn-outline-primary btn-sm">Register</a>
           </li>
         </ul>
       </div>
@@ -42,15 +38,15 @@
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-12 col-md-10 col-lg-8">
-          <h1 class="display-6 fw-bold mb-3">Welcome to Our Amazing Product</h1>
-          <p class="lead mb-4">
-            A short tagline that captures the essence of your product or service. Elevate your workflow with a
-            sleek, responsive homepage built with Bootstrap.
-          </p>
-          <div class="d-grid gap-2 d-sm-flex justify-content-center">
-            <a href="#features" class="btn btn-light btn-lg cta-btn">Learn More</a>
-            <a href="#contact" class="btn btn-outline-light btn-lg cta-btn">Get Started</a>
-          </div>
+                     <h1 class="display-6 fw-bold mb-3">Find Your Perfect Job Match</h1>
+           <p class="lead mb-4">
+             JobFilter uses advanced skill matching to connect talented professionals with the right opportunities. 
+             Upload your resume, let our AI match you with relevant jobs, or post positions to find qualified candidates.
+           </p>
+           <div class="d-grid gap-2 d-sm-flex justify-content-center">
+             <a href="jobs.html" class="btn btn-light btn-lg cta-btn">Find Jobs</a>
+             <a href="post-job.html" class="btn btn-outline-light btn-lg cta-btn">Post a Job</a>
+           </div>
         </div>
       </div>
     </div>
@@ -60,44 +56,44 @@
   <section id="features" class="py-5">
     <div class="container">
       <div class="text-center mb-5">
-        <h2 class="fw-bold">Features</h2>
-        <p class="text-muted mb-0">A glance at what makes this site special.</p>
+        <h2 class="fw-bold">How JobFilter Works</h2>
+        <p class="text-muted mb-0">Advanced skill matching technology for better job connections.</p>
       </div>
 
       <div class="row g-4">
         <div class="col-12 col-md-4">
           <div class="card h-100 p-3 shadow-sm text-center">
-            <div class="feature-icon mx-auto mb-2" aria-label="Icon">🚀</div>
+            <div class="feature-icon mx-auto mb-2" aria-label="Icon">📄</div>
             <div class="card-body">
-              <h5 class="card-title mb-2">Fast & Lightweight</h5>
-              <p class="card-text text-muted mb-0">Optimized for speed with clean HTML and minimal dependencies.</p>
+              <h5 class="card-title mb-2">Resume Parsing</h5>
+              <p class="card-text text-muted mb-0">Upload your resume and our AI extracts key skills automatically.</p>
             </div>
           </div>
         </div>
 
         <div class="col-12 col-md-4">
           <div class="card h-100 p-3 shadow-sm text-center">
-            <div class="feature-icon mx-auto mb-2" aria-label="Icon">💡</div>
+            <div class="feature-icon mx-auto mb-2" aria-label="Icon">🎯</div>
             <div class="card-body">
-              <h5 class="card-title mb-2">Responsive Layout</h5>
-              <p class="card-text text-muted mb-0">Looks great on phones, tablets, and desktops.</p>
+              <h5 class="card-title mb-2">Smart Matching</h5>
+              <p class="card-text text-muted mb-0">AI-powered algorithms match your skills with relevant job opportunities.</p>
             </div>
           </div>
         </div>
 
         <div class="col-12 col-md-4">
           <div class="card h-100 p-3 shadow-sm text-center">
-            <div class="feature-icon mx-auto mb-2" aria-label="Icon">🔧</div>
+            <div class="feature-icon mx-auto mb-2" aria-label="Icon">📊</div>
             <div class="card-body">
-              <h5 class="card-title mb-2">Easy Customization</h5>
-              <p class="card-text text-muted mb-0">Tailor colors, typography, and sections with simple tweaks.</p>
+              <h5 class="card-title mb-2">Candidate Ranking</h5>
+              <p class="card-text text-muted mb-0">Employers get ranked applicants based on skill relevance and experience.</p>
             </div>
           </div>
         </div>
       </div>
       
       <div class="text-center mt-4">
-        <a href="features.html" class="btn btn-outline-primary">View All Features</a>
+        <a href="dashboard.html" class="btn btn-outline-primary">Get Started</a>
       </div>
     </div>
   </section>
@@ -110,15 +106,15 @@
           <div class="position-relative">
             <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d" class="img-fluid rounded shadow" alt="Team" style="width: 100%; height: 500px; object-fit: cover;">
             
-            <!-- About Our Team text positioned above the image -->
-            <div class="position-absolute text-center p-3" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 15px; top: -30px; left: 50%; transform: translateX(-50%); box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-              <h3 class="fw-bold mb-0 text-dark">About Our Team</h3>
-            </div>
-            
-            <!-- Learn More About Us button positioned below the image -->
-            <div class="position-absolute text-center p-3" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 15px; bottom: -30px; left: 50%; transform: translateX(-50%); box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-              <a href="about.html" class="btn btn-outline-primary">Learn More About Us</a>
-            </div>
+                         <!-- About Our Team text positioned above the image -->
+             <div class="position-absolute text-center p-3" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 15px; top: -30px; left: 50%; transform: translateX(-50%); box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+               <h3 class="fw-bold mb-0 text-dark">Smart Job Matching</h3>
+             </div>
+             
+             <!-- Learn More About Us button positioned below the image -->
+             <div class="position-absolute text-center p-3" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 15px; bottom: -30px; left: 50%; transform: translateX(-50%); box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+               <a href="dashboard.html" class="btn btn-outline-primary">Start Matching</a>
+             </div>
           </div>
         </div>
       </div>
@@ -129,8 +125,8 @@
   <section id="testimonials" class="py-5">
     <div class="container">
       <div class="text-center mb-5">
-        <h2 class="fw-bold">What People Say</h2>
-        <p class="text-muted mb-0">Real feedback from satisfied users.</p>
+        <h2 class="fw-bold">Success Stories</h2>
+        <p class="text-muted mb-0">See how JobFilter is transforming recruitment.</p>
       </div>
 
       <div class="row g-4">
