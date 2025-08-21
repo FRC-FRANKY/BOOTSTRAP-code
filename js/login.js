@@ -27,7 +27,7 @@
     // Mark as logged in and go to homepage
     localStorage.setItem('isLoggedIn', 'true');
     localStorage.setItem('loggedInUser', inputVal);
-    window.location.href = 'Homepage.html';
+    window.location.href = 'index.html';
   }, false);
 
   // Password visibility toggle
