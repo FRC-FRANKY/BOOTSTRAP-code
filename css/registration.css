@@ -1,18 +1,161 @@
+/* registration.css */
+
+body {
+    background: linear-gradient(135deg, #0d6efd, #6f42c1);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 1920px; /* controls overall form width */
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+    padding: 30px;
+    width: 100%; /* ensure card fills container */
+    box-sizing: border-box;
+}
+
+.card-title {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 30px; /* space below title */
+    text-align: center;
+    font-size: 1.8rem;
+    white-space: nowrap; /* prevent wrapping */
+}
+
+/* Role cards container */
+.d-flex.justify-content-center.gap-4 {
+    justify-content: center !important;
+    gap: 1.5rem;
+}
+
+/* Role cards */
 .role-card {
     cursor: pointer;
     border: 2px solid transparent;
-    transition: all 0.3s ease;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+    color: #555;
+    width: 140px;
+    min-width: 120px;
+    user-select: none;
+    padding: 20px 10px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
 }
 
-.role-card:hover {
-    border-color: #0d6efd;
+    .role-card i {
+        font-size: 36px;
+        margin-bottom: 10px;
+        color: #4a90e2;
+        transition: color 0.3s ease;
+    }
+
+    .role-card div {
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .role-card:hover {
+        border-color: #6a45c2;
+        background-color: #f0f0ff;
+        color: #6a45c2;
+    }
+
+    .role-card.selected {
+        border-color: #4a90e2;
+        background-color: #e6f0ff;
+        color: #4a90e2;
+    }
+
+/* Form labels */
+.form-label {
+    font-weight: 500;
+    color: #444;
+    margin-bottom: 6px;
 }
 
-.role-card.selected {
-    border-color: #0d6efd;
-    background-color: #e7f1ff;
+/* Inputs */
+.form-control {
+    border-radius: 8px;
+    border: 1.5px solid #ccc;
+    padding: 10px 14px;
+    transition: border-color 0.3s ease;
+    font-size: 1rem;
+    box-sizing: border-box;
 }
 
-.bi {
-    font-size: 2rem;
+    .form-control:focus {
+        border-color: #4a90e2;
+        box-shadow: 0 0 6px #4a90e2aa;
+        outline: none;
+    }
+
+/* Employee and Employer field containers */
+#employeeFields,
+#employerFields {
+    margin-top: 20px;
+}
+
+/* Register button */
+.btn-primary {
+    background: linear-gradient(135deg, #4a90e2, #6a45c2);
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 18px;
+    transition: background 0.3s ease;
+    margin-top: 25px;
+    width: 100%; /* full width */
+    box-sizing: border-box;
+}
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #6a45c2, #4a90e2);
+    }
+
+/* Link styling */
+.text-center small a {
+    color: #4a90e2;
+    text-decoration: none;
+    font-weight: 600;
+    transition: text-decoration 0.3s ease;
+}
+
+    .text-center small a:hover {
+        text-decoration: underline;
+    }
+
+/* Checkbox style */
+input[type="checkbox"] {
+    accent-color: #4a90e2;
+}
+
+/* Responsive styles */
+@media (max-width: 576px) {
+    .role-card {
+        width: 120px;
+        font-size: 14px;
+        padding: 15px 8px;
+    }
+
+        .role-card i {
+            font-size: 28px;
+        }
 }

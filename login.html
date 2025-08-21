@@ -1,110 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Login</title>
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="css/login.css" rel="stylesheet">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --brand: #0d6efd;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0d6efd, #6f42c1);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .login-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .brand-banner {
+            display: block;
+            width: 100%;
+            max-width: 140px;
+            height: auto;
+            margin-bottom: 24px;
+            object-fit: contain;
+        }
+
+        .login-card {
+            width: 100%;
+            border: none;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            background-color: #fff;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0d6efd, #6f42c1);
+            border: none;
+            box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15);
+        }
+
+            .btn-primary:hover {
+                filter: brightness(1.05);
+            }
+
+        .input-group-text {
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
+    <main class="login-wrapper">
+        <!-- Logo -->
+        <img src="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/2c02782c-fef2-4fee-a2ef-038b6d584a47/dkdsr7s-01ab50cd-7fc4-4c4f-8d93-ae0b831db0ed.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzJjMDI3ODJjLWZlZjItNGZlZS1hMmVmLTAzOGI2ZDU4NGE0N1wvZGtkc3I3cy0wMWFiNTBjZC03ZmM0LTRjNGYtOGQ5My1hZTBiODMxZGIwZWQucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.ZM5-1wj3Tuwx8OHvftgeyNlP5Ysph0qy4zSzgJl9jw4"
+             alt="Brand Logo" class="brand-banner" />
 
-  <main class="container">
-    <div class="row justify-content-center">
-      <div class="col-12 col-sm-8 col-md-6 col-lg-5">
-        <div class="card shadow-sm login-card">
-          <div class="card-header border-0 pt-4 pb-0">
-                         <div class="d-flex align-items-center justify-content-center">
-               <img src="https://www.shutterstock.com/image-vector/team-working-logo-design-vector-260nw-2363893331.jpg" alt="Brand Logo" class="brand-logo">
-               <h5 class="mb-0">Login</h5>
-             </div>
-            <p class="text-muted mb-0 mt-2">Welcome back! Sign in to continue.</p>
-            
-         
-            <div id="loginError" class="alert alert-danger d-none py-2 mb-3 small" role="alert">
-              Invalid credentials. Try <code>demo@example.com</code> (or <code>demo</code>) with password <code>password123</code>.
+        <!-- Login Card -->
+        <div class="card login-card">
+            <div class="card-header border-0 pt-4 pb-0 text-center bg-white">
+                <h5 class="mb-0">Login</h5>
+                <p class="text-muted mt-2 mb-0">Welcome back! Sign in to continue.</p>
             </div>
-            <form class="needs-validation" novalidate action="#" method="post" autocomplete="on">
-              <!-- Email / Username -->
-              <div class="mb-3">
-                <label for="email" class="form-label">Email or Username</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="email"
-                  name="email"
-                  placeholder="you@example.com or your-username"
-                  required
-                  aria-describedby="emailHelp"
-                />
-                <div id="emailHelp" class="form-text">We'll never share your information.</div>
-                <div class="invalid-feedback">
-                  Please enter your email or username.
+            <div class="card-body">
+                <!-- Error Alert -->
+                <div id="loginError" class="alert alert-danger d-none py-2 mb-3 small" role="alert">
+                    Invalid credentials. Try <code>demo@example.com</code> (or <code>demo</code>) with password <code>password123</code>.
                 </div>
-              </div>
 
-              <!-- Password -->
-              <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <div class="input-group">
-                  <input
-                    type="password"
-                    class="form-control"
-                    id="password"
-                    name="password"
-                    placeholder="Enter your password"
-                    required
-                    minlength="6"
-                    aria-describedby="passwordHelp"
-                  />
-                  <button class="btn btn-outline-secondary" type="button" id="togglePassword" aria-label="Toggle password visibility">
-                    👁️
-                  </button>
-                </div>
-                <div id="passwordHelp" class="form-text">Must be at least 6 characters.</div>
-                <div class="invalid-feedback">
-                  Please enter your password (minimum 6 characters).
-                </div>
-              </div>
+                <!-- Form -->
+                <form class="needs-validation" novalidate action="#" method="post" autocomplete="on">
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email or Username</label>
+                        <input type="text" class="form-control" id="email" name="email"
+                               placeholder="you@example.com or your-username" required aria-describedby="emailHelp" />
+                        <div id="emailHelp" class="form-text">We'll never share your information.</div>
+                        <div class="invalid-feedback">Please enter your email or username.</div>
+                    </div>
 
-              <!-- Remember Me + Forgot -->
-              <div class="row align-items-center mb-3">
-                <div class="col-6">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="remember" name="remember" />
-                    <label class="form-check-label" for="remember">
-                      Remember me
-                    </label>
-                  </div>
-                </div>
-                                 <div class="col-6 text-end">
-                   <a href="forgot-password.html" class="text-decoration-none">Forgot password?</a>
-                 </div>
-              </div>
+                    <!-- Password -->
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="password" name="password"
+                                   placeholder="Enter your password" required minlength="6" aria-describedby="passwordHelp" />
+                            <span class="input-group-text" id="togglePassword" aria-label="Toggle password visibility">👁️</span>
+                        </div>
+                        <div id="passwordHelp" class="form-text">Must be at least 6 characters.</div>
+                        <div class="invalid-feedback">Please enter your password (minimum 6 characters).</div>
+                    </div>
 
-              <!-- Submit -->
-              <div class="d-grid">
-                <button class="btn btn-primary btn-lg" type="submit">Login</button>
-              </div>
+                    <!-- Remember + Forgot -->
+                    <div class="row align-items-center mb-3">
+                        <div class="col-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="remember" name="remember" />
+                                <label class="form-check-label" for="remember">Remember me</label>
+                            </div>
+                        </div>
+                        <div class="col-6 text-end">
+                            <a href="forgot-password.html" class="text-decoration-none">Forgot password?</a>
+                        </div>
+                    </div>
 
-              <!-- Sign up link -->
-              <div class="text-center mt-3">
-                <span class="text-muted">New here?</span>
-                <a href="Registration.html" class="ms-1 text-decoration-none">Create an account</a>
-              </div>
-            </form>
-          </div>
+                    <!-- Submit -->
+                    <div class="d-grid">
+                        <button class="btn btn-primary btn-lg" type="submit">Login</button>
+                    </div>
+
+                    <!-- Signup -->
+                    <div class="text-center mt-3">
+                        <span class="text-muted">New here?</span>
+                        <a href="Registration.html" class="ms-1 text-decoration-none">Create an account</a>
+                    </div>
+                </form>
+            </div>
         </div>
+    </main>
 
-      
-       
-      </div>
-    </div>
-  </main>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- Bootstrap JS (for optional interactions) -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="js/login.js"></script>
+    <!-- Password Toggle Script -->
+    <script>
+        document.getElementById('togglePassword').addEventListener('click', function () {
+            const passwordInput = document.getElementById('password');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.textContent = type === 'password' ? '👁️' : '🙈';
+        });
+    </script>
 </body>
 </html>
