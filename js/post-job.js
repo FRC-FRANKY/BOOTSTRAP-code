@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializePostJobPage() {
+    
     // Form validation
     const form = document.getElementById('jobPostForm');
     if (form) {
@@ -58,6 +59,7 @@ function handleJobPost(event) {
 
     // Simulate API call
     setTimeout(() => {
+        
         // Success
         submitBtn.textContent = 'Job Posted Successfully!';
         submitBtn.classList.remove('btn-primary');
