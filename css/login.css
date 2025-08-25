@@ -6,8 +6,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    text-align: center;
+  
 }
+
+
 
 
 body {
@@ -20,17 +22,19 @@ body {
 }
 
 .login-card {
-  width: 100%;
-  max-width: 420px;
+  width: 150%;
+  max-width: 500px;
   border: 0;
   border-radius: 1rem;
   overflow: hidden;
+  background: white;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  margin-top: 1rem;
 }
 
-.brand-logo {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
+.brand-banner {
+  width: 200px;
+  height: 200px;
   object-fit: cover;
   margin-right: 8px;
 }

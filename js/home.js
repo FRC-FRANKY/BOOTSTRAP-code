@@ -10,19 +10,7 @@
     window.location.replace('login.html');
     return;
   }
-  // Navbar greeting (hide on landing)
-  const storedUser = localStorage.getItem('loggedInUser');
-  const greet = document.getElementById('userGreeting');
-  if (greet) {
-    if (isLanding) {
-      // do not show greeting on public landing
-      greet.remove();
-    } else if (storedUser) {
-      greet.textContent = `Hello, ${storedUser}!`;
-    } else {
-      greet.textContent = '';
-    }
-  }
+
 
   // Toggle navbar auth controls on landing
   const logoutBtn = document.getElementById('logoutBtn');

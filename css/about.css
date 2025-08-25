@@ -1,0 +1,48 @@
+/* About Page Styles */
+
+.card {
+  transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.display-4, .display-6 {
+  font-size: 3rem;
+}
+
+.display-6 {
+  font-size: 2.5rem;
+}
+
+/* Team member cards */
+.rounded-circle {
+  border: 3px solid #f8f9fa;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.card:hover .rounded-circle {
+  border-color: #0d6efd;
+}
+
+/* Stats cards */
+.display-4.fw-bold {
+  color: #0d6efd !important;
+}
+
+/* Section backgrounds */
+section.bg-light {
+  background: #f8f9fa;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .display-4 {
+    font-size: 2rem;
+  }
+  
+  .display-6 {
+    font-size: 2rem;
+  }
+}

@@ -28,18 +28,7 @@ function checkLoginStatus() {
         return;
     }
     
-    // Set user name
-    const userName = localStorage.getItem('loggedInUser') || 'User';
-    const userNameElement = document.getElementById('userName');
-    if (userNameElement) {
-        userNameElement.textContent = userName;
-    }
-    
-    // Set user greeting
-    const userGreeting = document.getElementById('userGreeting');
-    if (userGreeting) {
-        userGreeting.textContent = `Welcome, ${userName}!`;
-    }
+
 }
 
 function setupRoleSwitching() {
