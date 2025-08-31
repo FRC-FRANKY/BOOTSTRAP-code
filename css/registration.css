@@ -106,6 +106,12 @@ body {
         outline: none;
     }
 
+    /* Invalid input styling */
+    .form-control.is-invalid {
+        border-color: #dc3545;
+        box-shadow: 0 0 6px #dc3545aa;
+    }
+
 /* Employee and Employer field containers */
 #employeeFields,
 #employerFields {
@@ -146,6 +152,35 @@ body {
 input[type="checkbox"] {
     accent-color: #4a90e2;
 }
+
+/* Style textarea for bio */
+#bio {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Style file input for resume */
+#resume {
+    padding: 6px 10px;
+}
+
+    /* Override default invalid file input shadow for bootstrap */
+    #resume.is-invalid {
+        border-color: #dc3545;
+        box-shadow: 0 0 6px #dc3545aa;
+    }
+
+    /* Adjust invalid feedback margin for file input */
+    #resume + .invalid-feedback {
+        display: block;
+        margin-top: 0.25rem;
+    }
+
+/*pointer for role cards if not present */
+.role-card {
+    cursor: pointer;
+}
+
 
 /* Responsive styles */
 @media (max-width: 576px) {
