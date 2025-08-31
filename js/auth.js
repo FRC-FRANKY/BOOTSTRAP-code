@@ -30,109 +30,102 @@ class AuthService {
   }
 
   login(email, password) {
-    // Sample user credentials (in a real app, this would be an API call)
-    const users = [
-      { email: 'demo@example.com', username: 'demo', password: 'password123', name: 'Demo User', role: 'jobseeker' },
-      { email: 'employer@example.com', username: 'employer', password: 'password123', name: 'Demo Employer', role: 'employer' }
+    // Sample authentication - in a real app, this would check against a database
+    const validCredentials = [
+      { email: 'demo@example.com', password: 'password123' },
+      { email: 'demo', password: 'password123' }
     ];
-
-    const user = users.find(u => 
-      (u.email.toLowerCase() === email.toLowerCase() || u.username.toLowerCase() === email.toLowerCase()) && 
-      u.password === password
+    
+    const isValid = validCredentials.some(cred => 
+      cred.email === email && cred.password === password
     );
-
-    if (user) {
-      // Store user data (without password)
-      const userData = {
-        email: user.email,
-        username: user.username,
-        name: user.name,
-        role: user.role,
-        loginTime: new Date().toISOString()
-      };
-
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('loggedInUser', JSON.stringify(userData));
-      
+    
+    if (isValid) {
       this.isAuthenticated = true;
-      this.currentUser = userData;
+      this.currentUser = { email, name: 'Demo User' };
       
-      return { success: true, user: userData };
+      // Store in localStorage
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('loggedInUser', JSON.stringify(this.currentUser));
+      
+      return { success: true, message: 'Login successful' };
     } else {
-      return { success: false, message: 'Invalid email/username or password' };
+      return { success: false, message: 'Invalid email or password' };
     }
   }
 
   logout() {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('loggedInUser');
     this.isAuthenticated = false;
     this.currentUser = null;
     
-    // Redirect to login page
-    window.location.href = 'login.html';
+    // Clear localStorage
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('loggedInUser');
+    
+    // Redirect to home page
+    window.location.href = 'index.html';
   }
 
-  requireAuth(redirectTo = 'login.html') {
-    if (!this.checkAuthStatus()) {
-      // Store the intended destination
-      localStorage.setItem('redirectAfterLogin', window.location.href);
-      window.location.replace(redirectTo);
-      return false;
+  requireAuth() {
+    if (!this.isAuthenticated) {
+      // Store current page for redirect after login
+      localStorage.setItem('redirectUrl', window.location.href);
+      window.location.href = 'login.html';
     }
-    return true;
   }
 
   redirectAfterLogin() {
-    const redirectUrl = localStorage.getItem('redirectAfterLogin');
+    // Check if there's a redirect URL in localStorage
+    const redirectUrl = localStorage.getItem('redirectUrl');
     if (redirectUrl) {
-      localStorage.removeItem('redirectAfterLogin');
+      localStorage.removeItem('redirectUrl');
       window.location.href = redirectUrl;
     } else {
+      // Default redirect to dashboard
       window.location.href = 'dashboard.html';
     }
   }
 
-  getUserRole() {
-    return this.currentUser ? this.currentUser.role : null;
-  }
+  updateNavbar() {
+    const isLoggedIn = this.isAuthenticated;
+    const loginNav = document.getElementById('loginNav');
+    const signupNav = document.getElementById('signupNav');
 
-  isJobSeeker() {
-    return this.getUserRole() === 'jobseeker';
-  }
-
-  isEmployer() {
-    return this.getUserRole() === 'employer';
+    if (isLoggedIn) {
+      // User is logged in - hide login/register buttons
+      if (loginNav) loginNav.classList.add('d-none');
+      if (signupNav) signupNav.classList.add('d-none');
+      
+      // Add logout button if it doesn't exist
+      if (!document.getElementById('logoutBtn')) {
+        const navList = document.querySelector('#navMenu .navbar-nav');
+        if (navList) {
+          const logoutLi = document.createElement('li');
+          logoutLi.className = 'nav-item ms-lg-2';
+          logoutLi.innerHTML = '<button class="btn btn-outline-danger btn-sm" onclick="auth.logout()">Logout</button>';
+          navList.appendChild(logoutLi);
+        }
+      }
+    } else {
+      // User is not logged in - show login/register buttons
+      if (loginNav) loginNav.classList.remove('d-none');
+      if (signupNav) signupNav.classList.remove('d-none');
+      
+      // Remove logout button if it exists
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.parentElement.remove();
+      }
+    }
   }
 
   setupLogoutButton() {
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', () => {
-        const confirmLogout = confirm('Do you want to log out?');
-        if (confirmLogout) {
-          this.logout();
-        }
-      });
-    }
-  }
-
-  updateNavbar() {
-    const logoutBtn = document.getElementById('logoutBtn');
-    const loginNav = document.getElementById('loginNav');
-    const signupNav = document.getElementById('signupNav');
-    
-    if (this.isAuthenticated) {
-      // User is logged in
-      if (logoutBtn) logoutBtn.style.display = '';
-      if (loginNav) loginNav.classList.add('d-none');
-      if (signupNav) signupNav.classList.add('d-none');
-    } else {
-      // User is not logged in
-      if (logoutBtn) logoutBtn.style.display = 'none';
-      if (loginNav) loginNav.classList.remove('d-none');
-      if (signupNav) signupNav.classList.remove('d-none');
-    }
+    // Global logout function
+    window.logout = () => {
+      if (confirm('Are you sure you want to log out?')) {
+        this.logout();
+      }
+    };
   }
 }
 
