@@ -443,28 +443,3 @@ body {
   }
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  body {
-    background: #1a202c;
-    color: #e2e8f0;
-  }
-  
-  .hero {
-    background: #2d3748;
-  }
-  
-  .card {
-    background: #2d3748;
-    color: #e2e8f0;
-  }
-  
-  .card-text {
-    color: #a0aec0;
-  }
-  
-  #values,
-  #stats {
-    background: #2d3748;
-  }
-}
