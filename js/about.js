@@ -37,13 +37,9 @@
   function setupLogout() {
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
-      logoutBtn.addEventListener('click', function() {
-        if (confirm('Are you sure you want to log out?')) {
-          localStorage.removeItem('isLoggedIn');
-          localStorage.removeItem('loggedInUser');
-          window.location.href = 'index.html';
-        }
-      });
+      // Delegate to global auth handler to avoid double confirmation
+      logoutBtn.setAttribute('data-action', 'logout');
+      logoutBtn.onclick = null;
     }
   }
 

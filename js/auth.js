@@ -63,7 +63,7 @@ class AuthService {
     localStorage.removeItem('loggedInUser');
     
     // Redirect to home page
-    window.location.href = 'index.html';
+    window.location.href = 'login.html';
   }
 
   requireAuth() {
@@ -102,7 +102,8 @@ class AuthService {
         if (navList) {
           const logoutLi = document.createElement('li');
           logoutLi.className = 'nav-item ms-lg-2';
-          logoutLi.innerHTML = '<button class="btn btn-outline-danger btn-sm" onclick="auth.logout()">Logout</button>';
+          // Use global logout() to ensure confirmation everywhere
+          logoutLi.innerHTML = '<button id="logoutBtn" class="btn btn-outline-danger btn-sm" onclick="logout()">Log out</button>';
           navList.appendChild(logoutLi);
         }
       }
@@ -113,8 +114,10 @@ class AuthService {
       
       // Remove logout button if it exists
       const logoutBtn = document.getElementById('logoutBtn');
-      if (logoutBtn) {
-        logoutBtn.parentElement.remove();
+      if (logoutBtn && logoutBtn.parentElement) {
+        // Remove the wrapping <li> if present, else just remove the button
+        const wrapper = logoutBtn.closest('li') || logoutBtn;
+        wrapper.remove();
       }
     }
   }
@@ -122,10 +125,31 @@ class AuthService {
   setupLogoutButton() {
     // Global logout function
     window.logout = () => {
-      if (confirm('Are you sure you want to log out?')) {
+      if (window.confirm('Are you sure you want to log out?')) {
         this.logout();
       }
     };
+
+    // Bind click for any existing #logoutBtn
+    const bindDirectButton = () => {
+      const btn = document.getElementById('logoutBtn');
+      if (btn) {
+        btn.onclick = (e) => {
+          e.preventDefault();
+          window.logout();
+        };
+      }
+    };
+    bindDirectButton();
+
+    // Delegate clicks for any element declaring data-action="logout"
+    document.addEventListener('click', (e) => {
+      const target = e.target;
+      if (target && target.closest('[data-action="logout"]')) {
+        e.preventDefault();
+        window.logout();
+      }
+    });
   }
 }
 
