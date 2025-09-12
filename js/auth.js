@@ -180,7 +180,7 @@ class AuthService {
         window.location.href = 'login.html';
         return;
       }
-
+        //Changing Account Role
       const role = (this.currentUser && this.currentUser.role) || 'job_seeker';
       const allowed = this.rolePermissions[role] || [];
       const isAllowed = allowed.includes('*') || allowed.includes(currentFile);
@@ -197,6 +197,22 @@ class AuthService {
       }
     } catch (_) {
       // no-op
+    }
+
+    const role = (this.currentUser && this.currentUser.role) || 'employeer';
+    const allowed = this.rolePermissions [role] || [];
+    const isAllowed = allowed.includes('*') || allowed.includes(currentFile);
+    if(!isAllowed){
+      //if the page is allowed for jobseeker but not for employeer, encourage jobseeker login
+      const employerAllowed = (this.rolePermissions['job_seeker'] || []).includes('*') || (this.rolePermissions['job_seeker'] || []).includes(currentFile);
+      const message = employerAllowed
+      ? 'Access requires Employer account. Please sign in as JobSeeker.'
+      : 'Access denied for your role. Please sign in with the correct account.';
+      try { alert(message); } catch(_) {}
+      localStorage.setItem('redirectUrl', window.location.href);
+
+      //Force re-authentication
+      this.logout();
     }
   }
 

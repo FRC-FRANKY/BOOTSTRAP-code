@@ -10,6 +10,21 @@ function initializeDashboard() {
     
     // Setup role switching
     setupRoleSwitching();
+
+    // Auto-select tab based on logged-in user's role
+    try {
+        const user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+        const role = user && user.role ? user.role : 'job_seeker';
+        const jobSeekerRadio = document.getElementById('jobSeeker');
+        const employerRadio = document.getElementById('employer');
+        if (role === 'employer' || role === 'admin') {
+            if (employerRadio) employerRadio.checked = true;
+            showEmployerDashboard();
+        } else {
+            if (jobSeekerRadio) jobSeekerRadio.checked = true;
+            showJobSeekerDashboard();
+        }
+    } catch (e) { /* no-op */ }
     
     // Setup refresh button
     setupRefreshButton();
@@ -53,10 +68,28 @@ function setupRoleSwitching() {
         } catch (e) { /* no-op */ }
         return true;
     };
+
+    const requireJobSeekerRoleOrRelogin = () => {
+        try {
+            const user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+            const role = user && user.role ? user.role : 'job_seeker';
+            if (role !== 'job_seeker' && role !== 'admin') {
+                alert('Access requires Job Seeker account. Please sign in as job seeker.');
+                localStorage.setItem('redirectUrl', window.location.href);
+                // Force relogin
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('loggedInUser');
+                window.location.href = 'login.html';
+                return false;
+            }
+        } catch (e) { /* no-op */ }
+        return true;
+    };
     
     if (jobSeekerRadio && employerRadio) {
         jobSeekerRadio.addEventListener('change', function() {
             if (this.checked) {
+                if (!requireJobSeekerRoleOrRelogin()) return;
                 showJobSeekerDashboard();
             }
         });
@@ -79,6 +112,7 @@ function setupRoleSwitching() {
                 showEmployerDashboard();
             } else {
                 jobSeekerRadio.checked = true;
+                if (!requireJobSeekerRoleOrRelogin()) return;
                 showJobSeekerDashboard();
             }
         });
