@@ -13,6 +13,10 @@
 
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Font Awesome (for bell icon) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 </head>
 <body>
   <!-- Admin Navbar -->
@@ -31,10 +35,30 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="adminNavMenu">
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="reports.html">Reports</a></li>
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">          
           <li class="nav-item"><a class="nav-link" href="content-management.html">Content</a></li>          
           <li class="nav-item"><a class="nav-link" href="admin-profile.html">Profile</a></li>
+          <li class="nav-item">
+            <!--Notification-->
+            <li class="nav-item dropdown">
+  <a class="nav-link position-relative dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <i class="fas fa-bell"></i>
+    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+      3
+      <span class="visually-hidden">unread notifications</span>
+    </span>
+  </a>
+  <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="width: 300px;">
+    <li class="dropdown-header fw-bold">Notifications</li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="reports.html">New report submitted by Jane Doe</a></li>
+    <li><a class="dropdown-item" href="reports.html">Pending employer approval</a></li>
+    <li><a class="dropdown-item" href="reports.html">System maintenance scheduled</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item text-center text-primary" href="reports.html">View all</a></li>
+  </ul>
+</li>
+
           <li class="nav-item ms-lg-2"><button type="button" id="logoutBtn" class="btn btn-outline-danger btn-sm">Log out</button></li>
         </ul>
       </div>
@@ -50,6 +74,7 @@
         <a href="#" data-section="employers">Employers</a>
         <a href="#" data-section="jobs">Jobs</a>
         <a href="#" data-section="applications">Applications</a>
+        <a href="#" data-section="feedbacks">Feedbacks | Concerns</a>
         <a href="#" data-section="settings">Settings</a>
       </nav>
 
@@ -125,13 +150,13 @@
                 <h5>Pending Employer Approvals</h5>
                 <ul class="list-group">
                   <li class="list-group-item d-flex justify-content-between align-items-center">
-                    XYZ Inc <span class="badge bg-warning text-dark">Pending</span>
+                    TechCorp Inc | New York, NY<span class="badge bg-warning text-dark">Pending</span>
                   </li>
                   <li class="list-group-item d-flex justify-content-between align-items-center">
-                    Acme Ltd <span class="badge bg-warning text-dark">Pending</span>
+                    DesignStudio <span class="badge bg-warning text-dark">Pending</span>
                   </li>
                   <li class="list-group-item d-flex justify-content-between align-items-center">
-                    BrightTech <span class="badge bg-warning text-dark">Pending</span>
+                    StartupXYZ | San Fransico, CA <span class="badge bg-warning text-dark">Pending</span>
                   </li>
                 </ul>
               </div>
@@ -232,6 +257,50 @@
             </table>
           </div>
         </div>
+
+        <!--feedback/concerns section-->
+        <div id="feedbacks-section" class="d-none">
+  <div class="table-wrapper">
+    <h4>User Feedbacks & Concerns</h4>
+    <table class="table table-hover table-dark">
+      <thead>
+        <tr>
+          <th>Feedback ID</th>
+          <th>User Name</th>
+          <th>Email</th>
+          <th>Message</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>F001</td>
+          <td>John Doe</td>
+          <td>john@example.com</td>
+          <td>Having trouble uploading my resume.</td>
+          <td>2025-09-11</td>
+        </tr>
+        <tr>
+          <td>F002</td>
+          <td>Jane Smith</td>
+          <td>jane@example.com</td>
+          <td>Can you add more job categories?</td>
+          <td>2025-09-10</td>
+        </tr>
+        <tr>
+          <td>F003</td>
+          <td>Alice Johnson</td>
+          <td>alice@example.com</td>
+          <td>My application status isn't updating.</td>
+          <td>2025-09-09</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
 
         <div id="settings-section" class="d-none">
           <!--settings section-->

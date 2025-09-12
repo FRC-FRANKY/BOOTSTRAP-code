@@ -1,5 +1,5 @@
 const links = document.querySelectorAll('.sidebar a');
-const sections = ['dashboard', 'users', 'employers', 'jobs', 'applications', 'settings'];
+const sections = ['dashboard', 'users', 'employers', 'jobs', 'applications', 'feedbacks', 'settings'];
 
 links.forEach(link => {
   link.addEventListener('click', (e) => {
