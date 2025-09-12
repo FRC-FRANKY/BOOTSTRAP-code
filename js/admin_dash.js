@@ -1,102 +1,163 @@
-const links = document.querySelectorAll('.sidebar a');
+const links = document.querySelectorAll('.sidebar a[data-section]');
 const sections = ['dashboard', 'users', 'employers', 'jobs', 'applications', 'feedbacks', 'settings'];
 
+const burgerBtn = document.getElementById('burger-btn');
+let lastActiveSection = 'dashboard';
+
+let chartsInitialized = false;
+let userGrowthChart, applicationsChart;
+
+// Fade helpers with display toggle for better animation
+function fadeOutSection(sectionEl) {
+  if (!sectionEl) return;
+  sectionEl.style.opacity = '0';
+  sectionEl.style.transform = 'translateY(10px)';
+  setTimeout(() => {
+    sectionEl.classList.add('d-none');
+    sectionEl.style.position = 'absolute';
+    sectionEl.style.display = 'none';  // Hide completely for performance
+  }, 400);
+}
+
+function fadeInSection(sectionEl) {
+  if (!sectionEl) return;
+  sectionEl.classList.remove('d-none');
+  sectionEl.style.display = 'block';  // Show before animating
+  setTimeout(() => {
+    sectionEl.style.opacity = '1';
+    sectionEl.style.transform = 'translateY(0)';
+    sectionEl.style.position = 'relative';
+  }, 50);
+}
+
+// Update header title with capitalized first letter
+function updateHeaderTitle(section) {
+  const titleEl = document.getElementById('section-title');
+  if (titleEl) {
+    titleEl.textContent = section ? section.charAt(0).toUpperCase() + section.slice(1) : '';
+  }
+}
+
+// Initialize Charts (only once)
+function initCharts() {
+  if (chartsInitialized) return;
+
+  // User Growth Chart - Line
+  const ctxUserGrowth = document.getElementById('userGrowthChart').getContext('2d');
+  userGrowthChart = new Chart(ctxUserGrowth, {
+    type: 'line',
+    data: {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+      datasets: [{
+        label: 'Users',
+        data: [100, 300, 500, 700, 900, 1100, 1300, 1500, 1700],
+        borderColor: '#0d6efd',
+        backgroundColor: 'rgba(13, 110, 253, 0.2)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      animation: {
+        duration: 1000,
+        easing: 'easeOutQuart'
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 200 }
+        }
+      },
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
+
+  // Applications by Category Chart - Doughnut
+  const ctxApplications = document.getElementById('applicationsChart').getContext('2d');
+  applicationsChart = new Chart(ctxApplications, {
+    type: 'doughnut',
+    data: {
+      labels: ['IT', 'Marketing', 'Design', 'Finance', 'Sales'],
+      datasets: [{
+        label: 'Applications',
+        data: [500, 300, 250, 700, 400],
+        backgroundColor: [
+          '#0d6efd',
+          '#198754',
+          '#ffc107',
+          '#dc3545',
+          '#6c757d'
+        ],
+        hoverOffset: 30
+      }]
+    },
+    options: {
+      responsive: true,
+      animation: {
+        duration: 1000,
+        easing: 'easeOutQuart'
+      },
+      plugins: {
+        legend: { position: 'bottom' }
+      }
+    }
+  });
+
+  chartsInitialized = true;
+}
+
+// Show target section and hide others
+function showSection(target) {
+  sections.forEach(section => {
+    const sectionEl = document.getElementById(section + '-section');
+    if (section === target) {
+      fadeInSection(sectionEl);
+      if (section === 'dashboard') {
+        initCharts(); // Initialize charts when dashboard is shown
+      }
+    } else {
+      fadeOutSection(sectionEl);
+    }
+  });
+}
+
+// Nav click
 links.forEach(link => {
   link.addEventListener('click', (e) => {
     e.preventDefault();
     const target = link.getAttribute('data-section');
+    if (!target) return;
 
-    // Remove active class from all links, add to clicked
+    lastActiveSection = target;
+
     links.forEach(l => l.classList.remove('active'));
     link.classList.add('active');
 
-    // Hide all sections with fade-out, then show selected with fade-in
-    sections.forEach(section => {
-      const sectionEl = document.getElementById(section + '-section');
-      if (section !== target) {
-        sectionEl.style.opacity = '0';
-        sectionEl.style.transform = 'translateY(10px)';
-        // Use a timeout to add d-none after animation
-        setTimeout(() => {
-          sectionEl.classList.add('d-none');
-          sectionEl.style.position = 'absolute';
-        }, 400); // Match CSS transition duration
-      }
-    });
+    updateHeaderTitle(target);
+    showSection(target);
 
-    // Show target section after hiding others
-    const targetEl = document.getElementById(target + '-section');
-    if (targetEl.classList.contains('d-none')) {
-      targetEl.classList.remove('d-none');
-      // Allow a small delay for display block to take effect
-      setTimeout(() => {
-        targetEl.style.opacity = '1';
-        targetEl.style.transform = 'translateY(0)';
-        targetEl.style.position = 'relative';
-      }, 50);
+    // Close sidebar on small screens after click
+    if (window.innerWidth <= 768 && !document.body.classList.contains('sidebar-collapsed')) {
+      document.body.classList.add('sidebar-collapsed');
+      burgerBtn.setAttribute('aria-expanded', 'false');
     }
-
-    // Change header title (capitalize)
-    document.getElementById('section-title').textContent = target.charAt(0).toUpperCase() + target.slice(1);
   });
 });
 
-// --- Chart.js example data and config ---
+// Burger toggle
+if (burgerBtn) {
+  burgerBtn.addEventListener('click', () => {
+    const collapsed = document.body.classList.toggle('sidebar-collapsed');
+    burgerBtn.setAttribute('aria-expanded', !collapsed);
+  });
+}
 
-const userGrowthCtx = document.getElementById('userGrowthChart').getContext('2d');
-const userGrowthChart = new Chart(userGrowthCtx, {
-  type: 'line',
-  data: {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
-    datasets: [{
-      label: 'Users',
-      data: [100, 150, 300, 500, 650, 800, 900, 1100, 1200],
-      borderColor: '#007bff',
-      backgroundColor: 'rgba(0, 123, 255, 0.3)',
-      fill: true,
-      tension: 0.4,
-      pointRadius: 3,
-    }]
-  },
-  options: {
-    responsive: true,
-    plugins: {
-      legend: { display: false }
-    },
-    scales: {
-      y: { beginAtZero: true }
-    }
-  }
-});
-
-const applicationsCtx = document.getElementById('applicationsChart').getContext('2d');
-const applicationsChart = new Chart(applicationsCtx, {
-  type: 'doughnut',
-  data: {
-    labels: ['Tech', 'Finance', 'Healthcare', 'Education', 'Others'],
-    datasets: [{
-      label: 'Applications',
-      data: [400, 300, 200, 150, 100],
-      backgroundColor: [
-        '#007bff',
-        '#6610f2',
-        '#6f42c1',
-        '#e83e8c',
-        '#fd7e14'
-      ]
-    }]
-  },
-  options: {
-    responsive: true,
-    plugins: {
-      legend: { position: 'bottom' }
-    }
-  }
-});
-
-
-//admin settings
-// Load saved settings from localStorage on page load
+// Admin Settings load/save
 function loadSettings() {
   const savedSettings = JSON.parse(localStorage.getItem('adminSettings'));
   if (!savedSettings) return;
@@ -107,8 +168,7 @@ function loadSettings() {
   document.getElementById('enableEmailNotifications').checked = savedSettings.enableEmailNotifications ?? true;
 }
 
-// Save settings to localStorage when form is submitted
-document.getElementById('settings-form').addEventListener('submit', function(e) {
+document.getElementById('settings-form')?.addEventListener('submit', function(e) {
   e.preventDefault();
 
   const settings = {
@@ -129,5 +189,9 @@ document.getElementById('settings-form').addEventListener('submit', function(e) 
   }, 3000);
 });
 
-// Call loadSettings once when the page loads
-window.addEventListener('DOMContentLoaded', loadSettings);
+// On page load
+window.addEventListener('DOMContentLoaded', () => {
+  updateHeaderTitle(lastActiveSection);
+  showSection(lastActiveSection);
+  loadSettings();
+});
