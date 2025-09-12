@@ -37,6 +37,23 @@ function setupRoleSwitching() {
     const jobSeekerDashboard = document.getElementById('jobSeekerDashboard');
     const employerDashboard = document.getElementById('employerDashboard');
     
+    const requireEmployerRoleOrRelogin = () => {
+        try {
+            const user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+            const role = user && user.role ? user.role : 'job_seeker';
+            if (role !== 'employer' && role !== 'admin') {
+                alert('Access requires Employer account. Please sign in as employer.');
+                localStorage.setItem('redirectUrl', window.location.href);
+                // Force relogin
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('loggedInUser');
+                window.location.href = 'login.html';
+                return false;
+            }
+        } catch (e) { /* no-op */ }
+        return true;
+    };
+    
     if (jobSeekerRadio && employerRadio) {
         jobSeekerRadio.addEventListener('change', function() {
             if (this.checked) {
@@ -46,6 +63,7 @@ function setupRoleSwitching() {
         
         employerRadio.addEventListener('change', function() {
             if (this.checked) {
+                if (!requireEmployerRoleOrRelogin()) return;
                 showEmployerDashboard();
             }
         });
@@ -57,6 +75,7 @@ function setupRoleSwitching() {
         switchRoleBtn.addEventListener('click', function() {
             if (jobSeekerDashboard.style.display !== 'none') {
                 employerRadio.checked = true;
+                if (!requireEmployerRoleOrRelogin()) return;
                 showEmployerDashboard();
             } else {
                 jobSeekerRadio.checked = true;

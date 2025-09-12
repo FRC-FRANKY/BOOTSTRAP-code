@@ -20,6 +20,9 @@ class AuthService {
 
     // Update navbar on load
     this.updateNavbar();
+
+    // Enforce role-based access for current page
+    this.enforceRoleAccess();
   }
 
   checkAuthStatus() {
@@ -158,6 +161,42 @@ class AuthService {
         const li = link.closest('li');
         if (li) li.classList.remove('d-none');
       });
+    }
+  }
+
+  // Determine whether current user may access the current page; if not, force re-login
+  enforceRoleAccess() {
+    try {
+      const currentFile = (window.location.pathname.split('/').pop() || '').split('?')[0].split('#')[0];
+      if (!currentFile) return;
+
+      // Public pages that should not enforce role checks
+      const publicFiles = ['login.html', 'Registration.html', 'landing.html', 'about.html', 'contact.html'];
+      if (publicFiles.includes(currentFile)) return;
+
+      // Require auth for app pages
+      if (!this.isAuthenticated) {
+        localStorage.setItem('redirectUrl', window.location.href);
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const role = (this.currentUser && this.currentUser.role) || 'job_seeker';
+      const allowed = this.rolePermissions[role] || [];
+      const isAllowed = allowed.includes('*') || allowed.includes(currentFile);
+      if (!isAllowed) {
+        // If page is allowed for employer but not for job seeker, encourage employer login
+        const employerAllowed = (this.rolePermissions['employer'] || []).includes('*') || (this.rolePermissions['employer'] || []).includes(currentFile);
+        const message = employerAllowed
+          ? 'Access requires Employer account. Please sign in as employer.'
+          : 'Access denied for your role. Please sign in with the correct account.';
+        try { alert(message); } catch (_) {}
+        localStorage.setItem('redirectUrl', window.location.href);
+        // Force re-authentication
+        this.logout();
+      }
+    } catch (_) {
+      // no-op
     }
   }
 
