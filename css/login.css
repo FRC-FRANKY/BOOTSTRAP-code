@@ -9,10 +9,9 @@
 }
 
 
-
-
 body {
-    background: linear-gradient(135deg, #0d6efd, #6f42c1);
+    background-image: url("http://unblast.com/wp-content/uploads/2020/05/Job-Hunting-Illustration.jpg");
+    background: linear-gradient(135deg, #5680E9, #007aaa, #5AB9EA, #828db9, #564c68);
     min-height: 100vh;
     display: flex;
     align-items: center;
