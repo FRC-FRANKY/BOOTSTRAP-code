@@ -19,17 +19,15 @@
         const pwdVal = document.getElementById('password').value;
 
         // Simple authentication logic
-        if (authenticateUser(inputVal, pwdVal)) {
+        const authedUser = authenticateUser(inputVal, pwdVal);
+        if (authedUser) {
             // Hide any error messages
             const errorBox = document.getElementById('loginError');
             if (errorBox) errorBox.classList.add('d-none');
 
             // Store login state
             localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('loggedInUser', JSON.stringify({
-                email: inputVal,
-                name: 'Demo User'
-            }));
+            localStorage.setItem('loggedInUser', JSON.stringify(authedUser));
 
             // Redirect to dashboard or intended page
             redirectAfterLogin();
@@ -45,15 +43,16 @@
 
     // Authentication function
     function authenticateUser(email, password) {
-        // Demo credentials - in a real app, this would check against a database
-        const validCredentials = [
-            { email: 'demo@example.com', password: 'password123' },
-            { email: 'demo', password: 'password123' }
+        // Demo credentials with roles
+        const users = [
+            { email: 'jobseeker@demo.com', password: 'password123', role: 'job_seeker', name: 'Job Seeker' },
+            { email: 'employer@demo.com', password: 'password123', role: 'employer', name: 'Employer' },
+            { email: 'admin@demo.com', password: 'password123', role: 'admin', name: 'Administrator' }
         ];
 
-        return validCredentials.some(cred =>
-            cred.email === email && cred.password === password
-        );
+        const user = users.find(u => u.email === email && u.password === password);
+        if (!user) return null;
+        return { email: user.email, name: user.name, role: user.role };
     }
 
     // Redirect function

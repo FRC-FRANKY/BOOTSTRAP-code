@@ -3,6 +3,11 @@ class AuthService {
   constructor() {
     this.isAuthenticated = false;
     this.currentUser = null;
+    this.rolePermissions = {
+      job_seeker: ['dashboard.html', 'jobs.html', 'about.html', 'contact.html', 'user-profile.html'],
+      employer: ['dashboard.html', 'post-job.html', 'about.html', 'contact.html', 'user-profile.html'],
+      admin: ['*']
+    };
     this.init();
   }
 
@@ -12,6 +17,9 @@ class AuthService {
     
     // Set up logout button event listener
     this.setupLogoutButton();
+
+    // Update navbar on load
+    this.updateNavbar();
   }
 
   checkAuthStatus() {
@@ -30,19 +38,18 @@ class AuthService {
   }
 
   login(email, password) {
-    // Sample authentication - in a real app, this would check against a database
-    const validCredentials = [
-      { email: 'demo@example.com', password: 'password123' },
-      { email: 'demo', password: 'password123' }
+    // Sample authentication for demo roles
+    const users = [
+      { email: 'jobseeker@demo.com', password: 'password123', role: 'job_seeker', name: 'Job Seeker' },
+      { email: 'employer@demo.com', password: 'password123', role: 'employer', name: 'Employer' },
+      { email: 'admin@demo.com', password: 'password123', role: 'admin', name: 'Administrator' }
     ];
+
+    const user = users.find(u => u.email === email && u.password === password);
     
-    const isValid = validCredentials.some(cred => 
-      cred.email === email && cred.password === password
-    );
-    
-    if (isValid) {
+    if (user) {
       this.isAuthenticated = true;
-      this.currentUser = { email, name: 'Demo User' };
+      this.currentUser = { email: user.email, name: user.name, role: user.role };
       
       // Store in localStorage
       localStorage.setItem('isLoggedIn', 'true');
@@ -107,6 +114,31 @@ class AuthService {
           navList.appendChild(logoutLi);
         }
       }
+
+      // Role-based visibility for nav links
+      try {
+        const role = (this.currentUser && this.currentUser.role) || 'job_seeker';
+        const allowed = this.rolePermissions[role] || [];
+        const navLinks = document.querySelectorAll('#navMenu .nav-link');
+        navLinks.forEach(link => {
+          const href = (link.getAttribute('href') || '').trim();
+          // Ignore anchors and external links
+          if (!href || href.startsWith('#') || href.startsWith('http')) return;
+          // Always allow login/register pages handling elsewhere
+          const file = href.split('?')[0].split('#')[0];
+          const li = link.closest('li');
+          const isAllowed = allowed.includes('*') || allowed.includes(file);
+          if (li) {
+            if (isAllowed) {
+              li.classList.remove('d-none');
+            } else {
+              li.classList.add('d-none');
+            }
+          }
+        });
+      } catch (e) {
+        // no-op
+      }
     } else {
       // User is not logged in - show login/register buttons
       if (loginNav) loginNav.classList.remove('d-none');
@@ -119,6 +151,13 @@ class AuthService {
         const wrapper = logoutBtn.closest('li') || logoutBtn;
         wrapper.remove();
       }
+
+      // For logged-out users, keep all public links visible
+      const navLinks = document.querySelectorAll('#navMenu .nav-link');
+      navLinks.forEach(link => {
+        const li = link.closest('li');
+        if (li) li.classList.remove('d-none');
+      });
     }
   }
 
