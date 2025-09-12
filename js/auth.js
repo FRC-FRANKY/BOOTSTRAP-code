@@ -106,16 +106,23 @@ class AuthService {
       if (loginNav) loginNav.classList.add('d-none');
       if (signupNav) signupNav.classList.add('d-none');
       
-      // Add logout button if it doesn't exist
-      if (!document.getElementById('logoutBtn')) {
+      // Add logout button only for classic collapse navbars (not offcanvas)
+      const isOffcanvasMenu = !!document.querySelector('#navMenu.offcanvas, .offcanvas#navMenu');
+      const hasOffcanvasLogout = !!document.querySelector('#navMenu .offcanvas-body [data-action="logout"], #navMenu .offcanvas-body [onclick="logout()"], #navMenu .offcanvas-body #logoutBtn');
+      if (!isOffcanvasMenu && !document.getElementById('logoutBtn')) {
         const navList = document.querySelector('#navMenu .navbar-nav');
         if (navList) {
           const logoutLi = document.createElement('li');
           logoutLi.className = 'nav-item ms-lg-2';
-          // Use global logout() to ensure confirmation everywhere
-          logoutLi.innerHTML = '<button id="logoutBtn" class="btn btn-outline-danger btn-sm" onclick="logout()">Log out</button>';
+          logoutLi.innerHTML = '<button id="logoutBtn" class="btn btn-outline-danger btn-sm" data-action="logout">Log out</button>';
           navList.appendChild(logoutLi);
         }
+      } else if (hasOffcanvasLogout) {
+        // Ensure the offcanvas logout buttons use the delegated logout handler
+        document.querySelectorAll('#navMenu .offcanvas-body [onclick="logout()"]').forEach(btn => {
+          btn.removeAttribute('onclick');
+          btn.setAttribute('data-action', 'logout');
+        });
       }
 
       // Role-based visibility for nav links
