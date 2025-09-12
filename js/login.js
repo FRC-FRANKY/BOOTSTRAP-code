@@ -63,8 +63,18 @@
             localStorage.removeItem('redirectUrl');
             window.location.href = redirectUrl;
         } else {
-            // Default redirect to dashboard
-            window.location.href = 'dashboard.html';
+                 // Default redirect based on role
+        const userData = JSON.parse(localStorage.getItem('loggedInUser'));
+        if (userData) {
+            const role = userData.role;
+            if (role === 'admin') {
+                window.location.href = 'admin-dashboard.html';  // ✅ ADMIN REDIRECT
+            } else {
+                window.location.href = 'dashboard.html';        // ✅ For employer or job_seeker
+            }
+        } else {
+            window.location.href = 'login.html';  // fallback
+        }
         }
     }
 
