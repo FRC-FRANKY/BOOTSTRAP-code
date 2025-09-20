@@ -1,0 +1,321 @@
+<?php
+session_start();
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Find Jobs - JobFilter</title>
+  <link rel="icon" type="image/svg+xml" href="Images/log.png" />
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/home.css" rel="stylesheet">
+  <link href="css/jobs.css" rel="stylesheet">
+</head>
+<body>
+
+   <!-- Navbar -->
+   <nav class="navbar navbar-light bg-light sticky-top shadow-sm navbar-glass">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="dashboard.php">JobFilter</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#navMenu" aria-controls="navMenu" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="offcanvas offcanvas-end" tabindex="-1" id="navMenu" aria-labelledby="navMenuLabel">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="navMenuLabel">Menu</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+        <div class="text-center mb-3">
+          <img id="offcanvasAvatar" src="Images/log.png" class="rounded-circle mb-2" width="72" height="72" alt="Avatar">
+          <h5 class="fw-bold mb-2" id="offcanvasName">Guest</h5>
+          
+          <hr class="mt-3">
+        </div>
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="jobs.php">Find Jobs</a></li>
+          <li class="nav-item"><a class="nav-link" href="post-job.php">Post Job</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.php">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
+        </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Search Section -->
+  <section class="py-5 bg-light">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-12 col-lg-10">
+          <h1 class="text-center mb-4">Find Your Perfect Job Match</h1>
+          
+          <!-- Search Form -->
+          <div class="card shadow-sm">
+            <div class="card-body p-4">
+              <form id="jobSearchForm">
+                <div class="row g-3">
+                  <div class="col-12 col-md-4">
+                    <input type="text" class="form-control" id="jobTitle" placeholder="Job title or keywords">
+                  </div>
+                  <div class="col-12 col-md-3">
+                    <input type="text" class="form-control" id="location" placeholder="Location">
+                  </div>
+                  <div class="col-12 col-md-3">
+                    <select class="form-select" id="category">
+                      <option value="">All Categories</option>
+                      <option value="technology">Technology</option>
+                      <option value="marketing">Marketing</option>
+                      <option value="sales">Sales</option>
+                      <option value="design">Design</option>
+                      <option value="finance">Finance</option>
+                      <option value="healthcare">Healthcare</option>
+                    </select>
+                  </div>
+                  <div class="col-12 col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Search</button>
+                  </div>
+                </div>
+                
+                <!-- Advanced Filters -->
+                <div class="row mt-3" id="advancedFilters" style="display: none;">
+                  <div class="col-12">
+                    <div class="row g-3">
+                      <div class="col-12 col-md-3">
+                        <select class="form-select" id="experience">
+                          <option value="">Experience Level</option>
+                          <option value="entry">Entry Level</option>
+                          <option value="mid">Mid Level</option>
+                          <option value="senior">Senior Level</option>
+                        </select>
+                      </div>
+                      <div class="col-12 col-md-3">
+                        <select class="form-select" id="salary">
+                          <option value="">Salary Range</option>
+                          <option value="0-30000">$0 - $30,000</option>
+                          <option value="30000-60000">$30,000 - $60,000</option>
+                          <option value="60000-100000">$60,000 - $100,000</option>
+                          <option value="100000+">$100,000+</option>
+                        </select>
+                      </div>
+                      <div class="col-12 col-md-3">
+                        <select class="form-select" id="jobType">
+                          <option value="">Job Type</option>
+                          <option value="full-time">Full Time</option>
+                          <option value="part-time">Part Time</option>
+                          <option value="contract">Contract</option>
+                          <option value="remote">Remote</option>
+                        </select>
+                      </div>
+                      <div class="col-12 col-md-3">
+                        <button type="button" class="btn btn-outline-secondary w-100" id="clearFilters">Clear Filters</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="text-center mt-3">
+                  <button type="button" class="btn btn-link" id="toggleFilters">Advanced Filters</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Job Listings -->
+  <section class="py-5">
+    <div class="container">
+      <div class="row">
+        <!-- Filters Sidebar -->
+        <div class="col-12 col-lg-3">
+          <div class="card shadow-sm mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">Quick Filters</h5>
+            </div>
+            <div class="card-body">
+              <h6>Skills Match</h6>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="skillMatch">
+                <label class="form-check-label" for="skillMatch">
+                  High skill match only
+                </label>
+              </div>
+              
+              <hr>
+              
+              <h6>Experience</h6>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="entryLevel">
+                <label class="form-check-label" for="entryLevel">
+                  Entry Level
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="midLevel">
+                <label class="form-check-label" for="midLevel">
+                  Mid Level
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="seniorLevel">
+                <label class="form-check-label" for="seniorLevel">
+                  Senior Level
+                </label>
+              </div>
+              
+              <hr>
+              
+              <h6>Job Type</h6>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="fullTime">
+                <label class="form-check-label" for="fullTime">
+                  Full Time
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="partTime">
+                <label class="form-check-label" for="partTime">
+                  Part Time
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="remote">
+                <label class="form-check-label" for="remote">
+                  Remote
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Job Results -->
+        <div class="col-12 col-lg-9">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4>Job Results (<span id="jobCount">12</span>)</h4>
+            <select class="form-select w-auto" id="sortBy">
+              <option value="relevance">Sort by Relevance</option>
+              <option value="date">Sort by Date</option>
+              <option value="salary">Sort by Salary</option>
+            </select>
+          </div>
+
+          <!-- Job Cards -->
+          <div id="jobListings">
+            <!-- Job Card 1 -->
+            <div class="card shadow-sm mb-3 job-card" data-skills="javascript,react,node.js" data-experience="mid" data-salary="60000-100000" data-type="full-time">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-12 col-md-8">
+                    <h5 class="card-title">Senior Frontend Developer</h5>
+                    <p class="text-muted mb-2">TechCorp Inc. • New York, NY</p>
+                    <div class="mb-2">
+                      <span class="badge bg-primary me-1">JavaScript</span>
+                      <span class="badge bg-primary me-1">React</span>
+                      <span class="badge bg-primary me-1">Node.js</span>
+                      <span class="badge bg-success me-1">95% Match</span>
+                    </div>
+                    <p class="card-text">We're looking for a talented frontend developer to join our growing team. Experience with modern JavaScript frameworks required.</p>
+                  </div>
+                  <div class="col-12 col-md-4 text-md-end">
+                    <p class="text-success fw-bold mb-2">$85,000 - $120,000</p>
+                    <p class="text-muted small mb-2">Posted 2 days ago</p>
+                    <button class="btn btn-primary btn-sm">Apply Now</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Job Card 2 -->
+            <div class="card shadow-sm mb-3 job-card" data-skills="python,django,sql" data-experience="entry" data-salary="30000-60000" data-type="full-time">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-12 col-md-8">
+                    <h5 class="card-title">Python Developer</h5>
+                    <p class="text-muted mb-2">StartupXYZ • San Francisco, CA</p>
+                    <div class="mb-2">
+                      <span class="badge bg-primary me-1">Python</span>
+                      <span class="badge bg-primary me-1">Django</span>
+                      <span class="badge bg-primary me-1">SQL</span>
+                      <span class="badge bg-warning me-1">75% Match</span>
+                    </div>
+                    <p class="card-text">Join our dynamic startup team! Looking for a Python developer with Django experience and strong problem-solving skills.</p>
+                  </div>
+                  <div class="col-12 col-md-4 text-md-end">
+                    <p class="text-success fw-bold mb-2">$50,000 - $70,000</p>
+                    <p class="text-muted small mb-2">Posted 1 week ago</p>
+                    <button class="btn btn-primary btn-sm">Apply Now</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Job Card 3 -->
+            <div class="card shadow-sm mb-3 job-card" data-skills="ui,ux,figma" data-experience="mid" data-salary="60000-100000" data-type="remote">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-12 col-md-8">
+                    <h5 class="card-title">UI/UX Designer</h5>
+                    <p class="text-muted mb-2">DesignStudio • Remote</p>
+                    <div class="mb-2">
+                      <span class="badge bg-primary me-1">UI Design</span>
+                      <span class="badge bg-primary me-1">UX Design</span>
+                      <span class="badge bg-primary me-1">Figma</span>
+                      <span class="badge bg-info me-1">85% Match</span>
+                    </div>
+                    <p class="card-text">Remote opportunity for a creative UI/UX designer. Must have experience with Figma and user-centered design principles.</p>
+                  </div>
+                  <div class="col-12 col-md-4 text-md-end">
+                    <p class="text-success fw-bold mb-2">$70,000 - $95,000</p>
+                    <p class="text-muted small mb-2">Posted 3 days ago</p>
+                    <button class="btn btn-primary btn-sm">Apply Now</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <nav aria-label="Job listings pagination">
+            <ul class="pagination justify-content-center">
+              <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1">Previous</a>
+              </li>
+              <li class="page-item active"><a class="page-link" href="#">1</a></li>
+              <li class="page-item"><a class="page-link" href="#">2</a></li>
+              <li class="page-item"><a class="page-link" href="#">3</a></li>
+              <li class="page-item">
+                <a class="page-link" href="#">Next</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer py-4">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center">
+      <p class="mb-0 text-muted">&copy; 2025 JobFilter. All rights reserved.</p>
+      <div class="d-flex flex-wrap gap-3">
+        <a href="#" class="text-decoration-none text-muted">Privacy</a>
+        <a href="#" class="text-decoration-none text-muted">Terms</a>
+        <a href="#" class="text-decoration-none text-muted">Support</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Authentication Service -->
+  <script src="js/auth.js"></script>
+  
+  <script src="js/jobs.js"></script>
+</body>
+</html>
