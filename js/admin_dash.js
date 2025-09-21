@@ -30,6 +30,20 @@ function fadeInSection(sectionEl) {
   }, 50);
 }
 
+// Hide all sections immediately (no animation) - called on page load
+function hideAllSections() {
+  sections.forEach(section => {
+    const sectionEl = document.getElementById(section + '-section');
+    if (sectionEl) {
+      sectionEl.classList.add('d-none');
+      sectionEl.style.opacity = '0';
+      sectionEl.style.transform = 'translateY(10px)';
+      sectionEl.style.position = 'absolute';
+      sectionEl.style.display = 'none';
+    }
+  });
+}
+
 // Update header title with capitalized first letter
 function updateHeaderTitle(section) {
   const titleEl = document.getElementById('section-title');
@@ -141,10 +155,12 @@ links.forEach(link => {
     updateHeaderTitle(target);
     showSection(target);
 
-    // Close sidebar on small screens after click
+    // On small screens, collapse sidebar after click
     if (window.innerWidth <= 768 && !document.body.classList.contains('sidebar-collapsed')) {
       document.body.classList.add('sidebar-collapsed');
       burgerBtn.setAttribute('aria-expanded', 'false');
+      burgerBtn.classList.remove('open');
+      document.body.classList.remove('sidebar-open');
     }
   });
 });
@@ -152,8 +168,19 @@ links.forEach(link => {
 // Burger toggle
 if (burgerBtn) {
   burgerBtn.addEventListener('click', () => {
-    const collapsed = document.body.classList.toggle('sidebar-collapsed');
-    burgerBtn.setAttribute('aria-expanded', !collapsed);
+    const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+    
+    if (isCollapsed) {
+      // Sidebar is now collapsed (hidden)
+      burgerBtn.setAttribute('aria-expanded', 'false');
+      burgerBtn.classList.remove('open');
+      document.body.classList.remove('sidebar-open');
+    } else {
+      // Sidebar is now open (visible)
+      burgerBtn.setAttribute('aria-expanded', 'true');
+      burgerBtn.classList.add('open');
+      document.body.classList.add('sidebar-open');
+    }
   });
 }
 
@@ -191,7 +218,24 @@ document.getElementById('settings-form')?.addEventListener('submit', function(e)
 
 // On page load
 window.addEventListener('DOMContentLoaded', () => {
+  document.body.classList.add('sidebar-collapsed');
+burgerBtn.setAttribute('aria-expanded', 'false');
+burgerBtn.classList.remove('open');
+document.body.classList.remove('sidebar-open');
+
+  hideAllSections(); // Hide all sections immediately on load
   updateHeaderTitle(lastActiveSection);
   showSection(lastActiveSection);
   loadSettings();
+
+  // Initialize burger button state
+  if (!document.body.classList.contains('sidebar-collapsed')) {
+    burgerBtn.classList.add('open');
+    document.body.classList.add('sidebar-open');
+    burgerBtn.setAttribute('aria-expanded', 'true');
+  } else {
+    burgerBtn.classList.remove('open');
+    document.body.classList.remove('sidebar-open');
+    burgerBtn.setAttribute('aria-expanded', 'false');
+  }
 });

@@ -73,8 +73,8 @@ body.sidebar-collapsed main {
 /* Burger button */
 #burger-btn {
   position: fixed;
-  top: 12px;
-  left: 12px;
+  top: 6px;
+  left: 6px;
   width: 35px;
   height: 30px;
   display: flex;
@@ -84,6 +84,7 @@ body.sidebar-collapsed main {
   border: none;
   cursor: pointer;
   z-index: 1060;
+  transition: left 0.3s ease, right 0.3s ease;
 }
 
 #burger-btn span {
@@ -91,14 +92,41 @@ body.sidebar-collapsed main {
   height: 4px;
   background-color: #000;
   border-radius: 2px;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.3s ease, opacity 0.3s ease;
 }
 
 #burger-btn:hover span {
   background-color: #0d6efd;
 }
 
-/* Content sections */
+/* When sidebar is open, position burger button inside sidebar top right */
+body:not(.sidebar-collapsed) #burger-btn {
+  left: 6px;
+  right: auto;
+  top: 6px;
+}
+
+/* Transform burger lines into X when open */
+#burger-btn.open span:nth-child(1) {
+  transform: rotate(45deg) translate(7px, 7px);
+}
+
+#burger-btn.open span:nth-child(2) {
+  opacity: 0;
+}
+
+#burger-btn.open span:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -7px);
+}
+
+/* Show burger button on small screens */
+@media (max-width: 768px) {
+  #burger-btn {
+    display: flex;
+  }
+}
+
+/* Content sections: initially hidden */
 main > div {
   opacity: 0;
   transform: translateY(10px);
@@ -107,14 +135,17 @@ main > div {
   overflow: hidden;
   position: absolute;
   width: 100%;
+  display: none; /* Hide by default */
 }
 
+/* Content sections visible state */
 main > div:not(.d-none) {
   opacity: 1;
   transform: translateY(0);
   height: auto;
   position: relative;
   overflow: visible;
+  display: block; /* Show when active */
 }
 
 /* Content header */
