@@ -1,5 +1,11 @@
 <?php
 session_start();
+
+// Include authentication check
+require_once 'check_auth.php';
+
+// Require authentication to view this page
+requireAuth();
 ?>
 <!DOCTYPE html>
 <html lang="en">

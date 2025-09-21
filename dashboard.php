@@ -1,5 +1,11 @@
 <?php
 session_start();
+
+// Include authentication check
+require_once 'check_auth.php';
+
+// Require authentication to view this page
+requireAuth();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -12,7 +18,7 @@ session_start();
   <link href="css/home.css" rel="stylesheet">
   <link href="css/dashboard.css" rel="stylesheet">
 </head>
-<body>
+<body data-user-role="<?php echo htmlspecialchars($_SESSION['role'] ?? 'job_seeker'); ?>">
 
   <!-- Navbar -->
   <nav class="navbar navbar-light bg-light sticky-top shadow-sm navbar-glass">
@@ -29,8 +35,10 @@ session_start();
         <div class="offcanvas-body">
         <div class="text-center mb-3">
           <img id="offcanvasAvatar" src="Images/log.png" class="rounded-circle mb-2" width="72" height="72" alt="Avatar">
-          <h5 class="fw-bold mb-2" id="offcanvasName">Guest</h5>
-          <button type="button" class="btn btn-outline-secondary btn-sm" data-action="logout">Logout</button>
+          <h5 class="fw-bold mb-2" id="offcanvasName"><?php echo htmlspecialchars($_SESSION['name'] ?? 'Guest'); ?></h5>
+          <p class="text-muted small mb-2"><?php echo htmlspecialchars($_SESSION['email'] ?? ''); ?></p>
+          <p class="text-muted small mb-2">Role: <?php echo htmlspecialchars($_SESSION['role'] ?? 'user'); ?></p>
+          <a href="process_logout.php" class="btn btn-outline-danger btn-sm">Logout</a>
           <hr class="mt-3">
         </div>
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
@@ -330,8 +338,8 @@ session_start();
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Authentication Service -->
-  <script src="js/auth.js"></script>
+  <!-- Common JavaScript -->
+  <script src="js/common.js"></script>
   
   <script src="js/dashboard.js"></script>
 </body>

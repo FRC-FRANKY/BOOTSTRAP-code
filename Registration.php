@@ -1,5 +1,11 @@
 <?php
 session_start();
+
+// If user is already logged in, redirect to dashboard
+if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
+    header("Location: dashboard.php");
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -215,6 +221,9 @@ session_start();
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Common JavaScript -->
+    <script src="js/common.js"></script>
 
     <!-- Your custom JS with defer to run after DOM parsed -->
     <script src="js/registration.js" defer></script>

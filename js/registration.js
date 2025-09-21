@@ -1,5 +1,8 @@
-// Default selection
-selectRole('employee');
+// Registration page UI functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Default selection
+    selectRole('employee');
+});
 
 function selectRole(role) {
     document.getElementById('role').value = role;
@@ -46,8 +49,6 @@ function clearEmployeeValidation() {
 
 // Form validation on submit
 document.getElementById('registrationForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-
     const role = document.getElementById('role').value;
     let isValid = true;
 
@@ -159,12 +160,12 @@ document.getElementById('registrationForm').addEventListener('submit', function 
         }
     }
 
-    if (isValid) {
-        alert('Registration successful!');
-        this.reset();
-        selectRole(role); // Reset form to current role view and clear validation
-        // Add submission logic here if needed
+    if (!isValid) {
+        e.preventDefault();
+        e.stopPropagation();
     }
+    
+    this.classList.add('was-validated');
 });
 
 function validateEmail(email) {

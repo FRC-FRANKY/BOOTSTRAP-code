@@ -1,5 +1,11 @@
 <?php
 session_start();
+
+// If user is already logged in, redirect to dashboard
+if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
+    header("Location: dashboard.php");
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -90,9 +96,9 @@ session_start();
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Authentication Service -->
-    <script src="js/auth.js"></script>
-
+    <!-- Common JavaScript -->
+    <script src="js/common.js"></script>
+    
     <!-- Page JS -->
     <script src="js/login.js"></script>
 </body>
