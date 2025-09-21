@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -54,7 +57,7 @@
               <!-- Back to login link -->
               <div class="text-center mt-3">
                         <span class="text-muted">New here?</span>
-                        <a href="login.html" class="back">← Back to Login</a>
+                        <a href="login.php" class="back">← Back to Login</a>
                     </div>
             </form>
           </div>

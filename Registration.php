@@ -1,4 +1,13 @@
-﻿<!DOCTYPE html>
+<?php
+session_start();
+
+// If user is already logged in, redirect to dashboard
+if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
+    header("Location: dashboard.php");
+    exit();
+}
+?>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -40,7 +49,7 @@
                         </div>
 
                         <!-- Registration Form -->
-                        <form id="registrationForm" novalidate enctype="multipart/form-data">
+                        <form id="registrationForm" novalidate enctype="multipart/form-data" action="process_registration.php" method="post">
                             <input type="hidden" id="role" value="employee" />
 
                             <div class="mb-3">
@@ -201,7 +210,7 @@
                         <div class="text-center mt-3">
                             <small>
                                 Already have an account?
-                                <a href="login.html">Login</a>
+                                <a href="login.php">Login</a>
                             </small>
                         </div>
                     </div>
@@ -212,6 +221,9 @@
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Common JavaScript -->
+    <script src="js/common.js"></script>
 
     <!-- Your custom JS with defer to run after DOM parsed -->
     <script src="js/registration.js" defer></script>

@@ -1,3 +1,12 @@
+<?php
+session_start();
+
+// Include authentication check
+require_once 'check_auth.php';
+
+// Require authentication to view this page
+requireAuth();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,7 +24,7 @@
    <!-- Navbar -->
    <nav class="navbar navbar-light bg-light sticky-top shadow-sm navbar-glass">
     <div class="container">
-      <a class="navbar-brand fw-bold" href="dashboard.html">JobFilter</a>
+      <a class="navbar-brand fw-bold" href="dashboard.php">JobFilter</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#navMenu" aria-controls="navMenu" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -32,11 +41,11 @@
           <hr class="mt-3">
         </div>
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link" href="jobs.html">Find Jobs</a></li>
-          <li class="nav-item"><a class="nav-link" href="post-job.html">Post Job</a></li>
-          <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
-          <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+          <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="jobs.php">Find Jobs</a></li>
+          <li class="nav-item"><a class="nav-link" href="post-job.php">Post Job</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.php">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
         </ul>
         </div>
       </div>

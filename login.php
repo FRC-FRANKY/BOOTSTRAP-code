@@ -1,3 +1,12 @@
+<?php
+session_start();
+
+// If user is already logged in, redirect to dashboard
+if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
+    header("Location: dashboard.php");
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,7 +42,7 @@
                 </div>
 
                 <!-- Form -->
-                <form class="needs-validation" novalidate action="#" method="post" autocomplete="on">
+                <form class="needs-validation" novalidate action="process_login.php" method="post" autocomplete="on">
                     <!-- Email -->
                     <div class="mb-3">
                         <label for="email" class="form-label">Email or Username</label>
@@ -64,7 +73,7 @@
                             </div>
                         </div>
                         <div class="col-6 text-end">
-                            <a href="forgot-password.html" class="forgot-password">Forgot password?</a>
+                            <a href="forgot-password.php" class="forgot-password">Forgot password?</a>
                         </div>
 
                     </div>
@@ -77,7 +86,7 @@
                     <!-- Signup -->
                     <div class="text-center mt-3">
                         <span class="text-muted">New here?</span>
-                        <a href="registration.html" class="registration">Create an account</a>
+                        <a href="Registration.php" class="registration">Create an account</a>
                     </div>
                 </form>
             </div>
@@ -87,9 +96,9 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Authentication Service -->
-    <script src="js/auth.js"></script>
-
+    <!-- Common JavaScript -->
+    <script src="js/common.js"></script>
+    
     <!-- Page JS -->
     <script src="js/login.js"></script>
 </body>

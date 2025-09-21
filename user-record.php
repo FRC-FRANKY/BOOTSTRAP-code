@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,7 +16,7 @@
    <!-- Navbar -->
    <nav class="navbar navbar-light bg-light sticky-top shadow-sm navbar-glass">
     <div class="container">
-      <a class="navbar-brand fw-bold" href="dashboard.html">JobFilter</a>
+      <a class="navbar-brand fw-bold" href="dashboard.php">JobFilter</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#navMenu" aria-controls="navMenu" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -30,11 +33,11 @@
           <hr class="mt-3">
         </div>
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link" href="jobs.html">Find Jobs</a></li>
-          <li class="nav-item"><a class="nav-link" href="post-job.html">Post Job</a></li>
-          <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
-          <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+          <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="jobs.php">Find Jobs</a></li>
+          <li class="nav-item"><a class="nav-link" href="post-job.php">Post Job</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.php">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
         </ul>
         </div>
       </div>
@@ -50,7 +53,7 @@
           <p class="mb-0">Detailed information for a single user.</p>
         </div>
         <div class="d-flex gap-2">
-          <a class="btn btn-light btn-sm" href="user-management.html">Back to Users</a>
+          <a class="btn btn-light btn-sm" href="user-management.php">Back to Users</a>
         </div>
       </div>
     </div>
@@ -74,7 +77,7 @@
                 <p class="mb-1"><strong>Joined:</strong> <span id="recordJoined">2024-01-10</span></p>
               </div>
               <div class="d-grid gap-2 mt-3">
-                <a href="user-profile.html" class="btn btn-outline-primary btn-sm">Impersonate/Profile</a>
+                <a href="user-profile.php" class="btn btn-outline-primary btn-sm">Impersonate/Profile</a>
                 <button class="btn btn-outline-secondary btn-sm" id="resetPasswordBtn">Reset Password</button>
               </div>
             </div>
@@ -173,5 +176,3 @@
   </script>
 </body>
 </html>
-
-

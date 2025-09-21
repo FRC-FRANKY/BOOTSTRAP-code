@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,10 +30,10 @@
           <li class="nav-item"><a class="nav-link" href="#testimonials">Testimonials</a></li>
           <li class="nav-item"><a class="nav-link" href="#pricing">Pricing</a></li>
           <li class="nav-item ms-lg-3">
-            <a href="login.html" class="btn btn-outline-primary">Sign In</a>
+            <a href="login.php" class="btn btn-outline-primary">Sign In</a>
           </li>
           <li class="nav-item ms-lg-2">
-            <a href="Registration.html" class="btn btn-primary">Get Started</a>
+            <a href="Registration.php" class="btn btn-primary">Get Started</a>
           </li>
         </ul>
       </div>
@@ -50,7 +53,7 @@
             Save time, find better jobs, and advance your career faster.
           </p>
           <div class="d-flex flex-wrap gap-3">
-            <a href="Registration.html" class="btn btn-warning btn-lg px-4 py-3 fw-bold">
+            <a href="Registration.php" class="btn btn-warning btn-lg px-4 py-3 fw-bold">
               <i class="fas fa-rocket me-2"></i>Start Free Trial
             </a>
             <a href="#how-it-works" class="btn btn-outline-light btn-lg px-4 py-3">
@@ -246,7 +249,7 @@
       <h2 class="display-5 fw-bold mb-4">Ready to Transform Your Job Search?</h2>
       <p class="lead mb-5">Join over 100,000 professionals who have already found their dream jobs with JobFilter</p>
       <div class="d-flex flex-wrap gap-3 justify-content-center">
-        <a href="Registration.html" class="btn btn-warning btn-lg px-5 py-3 fw-bold">
+        <a href="Registration.php" class="btn btn-warning btn-lg px-5 py-3 fw-bold">
           <i class="fas fa-rocket me-2"></i>Start Free Trial
         </a>
         

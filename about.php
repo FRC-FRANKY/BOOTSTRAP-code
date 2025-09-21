@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,7 +16,7 @@
    <!-- Navbar -->
    <nav class="navbar navbar-light bg-light sticky-top shadow-sm navbar-glass">
     <div class="container">
-      <a class="navbar-brand fw-bold" href="dashboard.html">JobFilter</a>
+      <a class="navbar-brand fw-bold" href="dashboard.php">JobFilter</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#navMenu" aria-controls="navMenu" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -30,11 +33,11 @@
           <hr class="mt-3">
         </div>
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link" href="jobs.html">Find Jobs</a></li>
-          <li class="nav-item"><a class="nav-link" href="post-job.html">Post Job</a></li>
-          <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
-          <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+          <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="jobs.php">Find Jobs</a></li>
+          <li class="nav-item"><a class="nav-link" href="post-job.php">Post Job</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.php">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
         </ul>
         </div>
       </div>
@@ -115,7 +118,7 @@
         <div class="col-12 col-md-6 col-lg-3">
           <div class="card shadow-sm text-center">
             <div class="card-body p-4">
-              <a href="resume-christian.html" data-bs-toggle="modal" data-bs-target="#resumeChristian">
+              <a href="resume-christian.php" data-bs-toggle="modal" data-bs-target="#resumeChristian">
                 <img src="Images/Christian Crisostomo.jpg" alt="Project Manager" class="rounded-circle mb-3" width="120" height="120">
               </a>
               <h5 class="fw-bold mb-1">Christian Crisostomo</h5>
@@ -126,7 +129,7 @@
         <div class="col-12 col-md-6 col-lg-3">
           <div class="card shadow-sm text-center">
             <div class="card-body p-4">
-              <a href="resume-alyssa.html" data-bs-toggle="modal" data-bs-target="#resumeAlyssa">
+              <a href="resume-alyssa.php" data-bs-toggle="modal" data-bs-target="#resumeAlyssa">
                 <img src="Images/Alyssa jane prak.jpg" alt="System Analyst/Database Designer" class="rounded-circle mb-3" width="120" height="120">
               </a>
               <h5 class="fw-bold mb-1">Alyssa Jane Prak</h5>
@@ -137,7 +140,7 @@
         <div class="col-12 col-md-6 col-lg-3">
           <div class="card shadow-sm text-center">
             <div class="card-body p-4">
-              <a href="resume-frank.html" data-bs-toggle="modal" data-bs-target="#resumeFrank">
+              <a href="resume-frank.php" data-bs-toggle="modal" data-bs-target="#resumeFrank">
                 <img src="Images/Frank Oliver Bentoy..jpg" alt="Software Engineer" class="rounded-circle mb-3" width="120" height="120">
               </a>
               <h5 class="fw-bold mb-1">Frank Oliver Bentoy</h5>
@@ -148,7 +151,7 @@
         <div class="col-12 col-md-6 col-lg-3">
           <div class="card shadow-sm text-center">
             <div class="card-body p-4">
-              <a href="resume-shine.html" data-bs-toggle="modal" data-bs-target="#resumeShine">
+              <a href="resume-shine.php" data-bs-toggle="modal" data-bs-target="#resumeShine">
                 <img src="Images/Shine Florence Padillo.jpg" alt="Software Tester/Technical Writer" class="rounded-circle mb-3" width="120" height="120">
               </a>
               <h5 class="fw-bold mb-1">Shine Florence Padillo</h5>
@@ -175,7 +178,7 @@
             <li><strong>Experience:</strong> 5+ years leading software projects</li>
             <li><strong>Education:</strong> B.S. in Information Technology</li>
           </ul>
-          <p class="mb-0"><a href="resume-christian.html" target="_blank">Open full resume page</a></p>
+          <p class="mb-0"><a href="resume-christian.php" target="_blank">Open full resume page</a></p>
         </div>
       </div>
     </div>
@@ -195,7 +198,7 @@
             <li><strong>Experience:</strong> 3+ years in system analysis and DB design</li>
             <li><strong>Education:</strong> B.S. in Computer Science</li>
           </ul>
-          <p class="mb-0"><a href="resume-alyssa.html" target="_blank">Open full resume page</a></p>
+          <p class="mb-0"><a href="resume-alyssa.php" target="_blank">Open full resume page</a></p>
         </div>
       </div>
     </div>
@@ -215,7 +218,7 @@
             <li><strong>Experience:</strong> Built responsive web apps and dashboards</li>
             <li><strong>Education:</strong> B.S. in Information Systems</li>
           </ul>
-          <p class="mb-0"><a href="resume-frank.html" target="_blank">Open full resume page</a></p>
+          <p class="mb-0"><a href="resume-frank.php" target="_blank">Open full resume page</a></p>
         </div>
       </div>
     </div>
@@ -235,7 +238,7 @@
             <li><strong>Experience:</strong> Contributed to multiple product releases</li>
             <li><strong>Education:</strong> B.S. in Information Technology</li>
           </ul>
-          <p class="mb-0"><a href="resume-shine.html" target="_blank">Open full resume page</a></p>
+          <p class="mb-0"><a href="resume-shine.php" target="_blank">Open full resume page</a></p>
         </div>
       </div>
     </div>
@@ -301,3 +304,4 @@
   <script src="js/about.js"></script>
 </body>
 </html>
+

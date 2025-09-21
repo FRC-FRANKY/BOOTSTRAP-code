@@ -1,3 +1,12 @@
+<?php
+session_start();
+
+// Include authentication check
+require_once 'check_auth.php';
+
+// Require authentication to view this page
+requireAuth();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,12 +18,12 @@
   <link href="css/home.css" rel="stylesheet">
   <link href="css/dashboard.css" rel="stylesheet">
 </head>
-<body>
+<body data-user-role="<?php echo htmlspecialchars($_SESSION['role'] ?? 'job_seeker'); ?>">
 
   <!-- Navbar -->
   <nav class="navbar navbar-light bg-light sticky-top shadow-sm navbar-glass">
     <div class="container">
-      <a class="navbar-brand fw-bold" href="login.html">JobFilter</a>
+      <a class="navbar-brand fw-bold" href="login.php">JobFilter</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#navMenu" aria-controls="navMenu" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -26,18 +35,20 @@
         <div class="offcanvas-body">
         <div class="text-center mb-3">
           <img id="offcanvasAvatar" src="Images/log.png" class="rounded-circle mb-2" width="72" height="72" alt="Avatar">
-          <h5 class="fw-bold mb-2" id="offcanvasName">Guest</h5>
-          <button type="button" class="btn btn-outline-secondary btn-sm" data-action="logout">Logout</button>
+          <h5 class="fw-bold mb-2" id="offcanvasName"><?php echo htmlspecialchars($_SESSION['name'] ?? 'Guest'); ?></h5>
+          <p class="text-muted small mb-2"><?php echo htmlspecialchars($_SESSION['email'] ?? ''); ?></p>
+          <p class="text-muted small mb-2">Role: <?php echo htmlspecialchars($_SESSION['role'] ?? 'user'); ?></p>
+          <a href="process_logout.php" class="btn btn-outline-danger btn-sm">Logout</a>
           <hr class="mt-3">
         </div>
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link active" href="jobs.html">Find Jobs</a></li>
-          <li class="nav-item"><a class="nav-link" href="post-job.html">Post Job</a></li>
-          <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
-          <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
-          <li class="nav-item"><a class="nav-link" href="user-management.html">Users</a></li>
-          <li class="nav-item"><a class="nav-link" href="user-profile.html">Profile</a></li>
+          <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link active" href="jobs.php">Find Jobs</a></li>
+          <li class="nav-item"><a class="nav-link" href="post-job.php">Post Job</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.php">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
+          <li class="nav-item"><a class="nav-link" href="user-management.php">Users</a></li>
+          <li class="nav-item"><a class="nav-link" href="user-profile.php">Profile</a></li>
         </ul>
         </div>
       </div>
@@ -178,7 +189,7 @@
             <div class="card">
               <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Recent Applications</h5>
-                <a href="jobs.html" class="btn btn-primary btn-sm">View All</a>
+                <a href="jobs.php" class="btn btn-primary btn-sm">View All</a>
               </div>
               <div class="card-body">
                 <div class="table-responsive">
@@ -267,7 +278,7 @@
             <div class="card">
               <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Job Management</h5>
-                <a href="post-job.html" class="btn btn-primary btn-sm">Post New Job</a>
+                <a href="post-job.php" class="btn btn-primary btn-sm">Post New Job</a>
               </div>
               <div class="card-body">
                 <div class="table-responsive">
@@ -327,8 +338,8 @@
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Authentication Service -->
-  <script src="js/auth.js"></script>
+  <!-- Common JavaScript -->
+  <script src="js/common.js"></script>
   
   <script src="js/dashboard.js"></script>
 </body>

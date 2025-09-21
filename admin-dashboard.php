@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -38,8 +41,8 @@
     <hr class="my-2">
 
     <!-- Top bar items moved into sidebar -->
-    <a href="admin-profile.html"><i class="fas fa-user me-2"></i>Profile</a>
-    <a href="reports.html"><i class="fas fa-bell me-2"></i>Notifications <span class="badge bg-danger ms-1">3</span></a>
+    <a href="admin-profile.php"><i class="fas fa-user me-2"></i>Profile</a>
+    <a href="reports.php"><i class="fas fa-bell me-2"></i>Notifications <span class="badge bg-danger ms-1">3</span></a>
     <button id="logoutBtn" class="btn btn-outline-danger w-100 mt-2"><i class="fas fa-sign-out-alt me-2"></i>Log out</button>
   </nav>
 
@@ -310,3 +313,4 @@
   <script src="js/admin_dash.js"></script>
 </body>
 </html>
+
