@@ -43,7 +43,7 @@ session_start();
                         </div>
 
                         <!-- Registration Form -->
-                        <form id="registrationForm" novalidate enctype="multipart/form-data">
+                        <form id="registrationForm" novalidate enctype="multipart/form-data" action="process_registration.php" method="post">
                             <input type="hidden" id="role" value="employee" />
 
                             <div class="mb-3">

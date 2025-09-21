@@ -36,7 +36,7 @@ session_start();
                 </div>
 
                 <!-- Form -->
-                <form class="needs-validation" novalidate action="#" method="post" autocomplete="on">
+                <form class="needs-validation" novalidate action="process_login.php" method="post" autocomplete="on">
                     <!-- Email -->
                     <div class="mb-3">
                         <label for="email" class="form-label">Email or Username</label>

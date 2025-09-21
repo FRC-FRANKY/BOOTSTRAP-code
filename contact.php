@@ -67,7 +67,7 @@ session_start();
                 <div id="contactSuccess" class="alert alert-success d-none" role="alert">
                   Thank you! Your message has been sent. We'll get back to you soon.
                 </div>
-                <form id="contactForm" class="needs-validation" novalidate>
+                <form id="contactForm" class="needs-validation" novalidate action="process_contact.php" method="post">
                   <div class="row g-3">
                     <div class="col-12 col-md-6">
                       <label for="name" class="form-label">Full Name</label>

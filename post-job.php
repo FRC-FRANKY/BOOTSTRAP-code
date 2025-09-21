@@ -60,7 +60,7 @@ session_start();
           <!-- Job Posting Form -->
           <div class="card shadow-lg">
             <div class="card-body p-5">
-              <form id="jobPostForm" class="needs-validation" novalidate>
+              <form id="jobPostForm" class="needs-validation" novalidate action="process_job.php" method="post">
                 
                 <!-- Basic Information -->
                 <div class="row mb-4">
