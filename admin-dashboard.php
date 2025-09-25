@@ -17,7 +17,7 @@ session_start();
   <!-- Custom CSS -->
   <link rel="stylesheet" href="css/admin.css" />
 </head>
-<body>
+<body class="sidebar-collapsed">
   <!-- Burger Button -->
   <button id="burger-btn" aria-label="Toggle sidebar">
     <span></span>
