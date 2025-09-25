@@ -77,16 +77,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Add loading states to buttons
-    const buttons = document.querySelectorAll('button[type="submit"], .btn-primary, .btn-success');
+    // Add loading states to buttons (but not for forms that submit to PHP)
+    const buttons = document.querySelectorAll('button:not([type="submit"]), .btn-primary:not([type="submit"]), .btn-success:not([type="submit"])');
     buttons.forEach(button => {
         button.addEventListener('click', function() {
-            if (this.type === 'submit' || this.classList.contains('btn-primary') || this.classList.contains('btn-success')) {
+            if (!this.type || this.type !== 'submit') {
                 const originalText = this.innerHTML;
                 this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
                 this.disabled = true;
                 
-                // Re-enable after 2 seconds (forms will redirect anyway)
+                // Re-enable after 2 seconds
                 setTimeout(() => {
                     this.innerHTML = originalText;
                     this.disabled = false;

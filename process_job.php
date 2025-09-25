@@ -1,5 +1,8 @@
 <?php
-session_start();
+// Only start session if not already started
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Check if user is authenticated
 if (!isset($_SESSION['isLoggedIn']) || $_SESSION['isLoggedIn'] !== true) {

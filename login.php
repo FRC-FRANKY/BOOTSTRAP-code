@@ -37,9 +37,15 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
             </div>
             <div class="card-body">
                 <!-- Error Alert -->
-                <div id="loginError" class="alert alert-danger d-none py-2 mb-3 small" role="alert">
-                    Invalid credentials. Try <code>demo@example.com</code> (or <code>demo</code>) with password <code>password123</code>.
-                </div>
+                <?php if (isset($_SESSION['error'])): ?>
+                    <div id="loginError" class="alert alert-danger py-2 mb-3 small" role="alert">
+                        <?php echo htmlspecialchars($_SESSION['error']); ?>
+                    </div>
+                <?php else: ?>
+                    <div id="loginError" class="alert alert-danger d-none py-2 mb-3 small" role="alert">
+                        Invalid credentials. Try <code>jobseeker@demo.com</code> with password <code>password123</code>.
+                    </div>
+                <?php endif; ?>
 
                 <!-- Form -->
                 <form class="needs-validation" novalidate action="process_login.php" method="post" autocomplete="on">

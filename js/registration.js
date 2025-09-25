@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function selectRole(role) {
+    // Update the hidden input value
     document.getElementById('role').value = role;
 
     const employeeCard = document.getElementById('employeeCard');
@@ -19,6 +20,10 @@ function selectRole(role) {
         employerFields.style.display = 'none';
 
         clearEmployerValidation();
+        
+        // Add visual feedback
+        employeeCard.style.transform = 'scale(1.05)';
+        employerCard.style.transform = 'scale(1)';
     } else {
         employerCard.classList.add('selected');
         employeeCard.classList.remove('selected');
@@ -26,7 +31,19 @@ function selectRole(role) {
         employeeFields.style.display = 'none';
 
         clearEmployeeValidation();
+        
+        // Add visual feedback
+        employerCard.style.transform = 'scale(1.05)';
+        employeeCard.style.transform = 'scale(1)';
     }
+    
+    // Store the selected role for form submission
+    window.selectedRole = role;
+    console.log('Role selected:', role);
+    
+    // Add smooth transitions
+    employeeCard.style.transition = 'all 0.3s ease';
+    employerCard.style.transition = 'all 0.3s ease';
 }
 
 // Clear validation styles for employer fields
@@ -49,8 +66,14 @@ function clearEmployeeValidation() {
 
 // Form validation on submit
 document.getElementById('registrationForm').addEventListener('submit', function (e) {
-    const role = document.getElementById('role').value;
+    // Ensure the role is set from the selected role
+    const selectedRole = window.selectedRole || document.getElementById('role').value;
+    document.getElementById('role').value = selectedRole;
+    
+    const role = selectedRole;
     let isValid = true;
+    
+    console.log('Form submitting with role:', role);
 
     // Common fields
     const fullname = document.getElementById('fullname');

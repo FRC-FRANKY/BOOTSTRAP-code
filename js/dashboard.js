@@ -9,14 +9,24 @@ function initializeDashboard() {
     setupRoleSwitching();
 
     // Auto-select tab based on user's role from PHP session
-    const userRole = document.body.getAttribute('data-user-role') || 'job_seeker';
+    let userRole = document.body.getAttribute('data-user-role') || 'job_seeker';
+    
+    // Fix role mapping for existing sessions
+    if (userRole === 'employee') {
+        userRole = 'job_seeker';
+        console.log('Fixed role mapping: employee -> job_seeker');
+    }
+    
     const jobSeekerRadio = document.getElementById('jobSeeker');
     const employerRadio = document.getElementById('employer');
+    
+    console.log('User role from PHP:', userRole);
     
     if (userRole === 'employer' || userRole === 'admin') {
         if (employerRadio) employerRadio.checked = true;
         showEmployerDashboard();
     } else {
+        // Default to job seeker for job_seeker role or any other role
         if (jobSeekerRadio) jobSeekerRadio.checked = true;
         showJobSeekerDashboard();
     }
@@ -29,6 +39,9 @@ function initializeDashboard() {
     
     // Setup interactive elements
     setupInteractiveElements();
+    
+    // Ensure navigation is visible
+    ensureNavigationVisible();
 }
 
 function setupRoleSwitching() {
@@ -37,16 +50,31 @@ function setupRoleSwitching() {
     const jobSeekerDashboard = document.getElementById('jobSeekerDashboard');
     const employerDashboard = document.getElementById('employerDashboard');
     
+    // Get user role from PHP session data
+    const userRole = document.body.getAttribute('data-user-role') || 'job_seeker';
+    
     if (jobSeekerRadio && employerRadio) {
         jobSeekerRadio.addEventListener('change', function() {
             if (this.checked) {
-                showJobSeekerDashboard();
+                // Check if user has permission to view job seeker dashboard
+                if (userRole === 'job_seeker' || userRole === 'admin') {
+                    showJobSeekerDashboard();
+                } else {
+                    alert('Access requires Job Seeker account. Please sign in as job seeker.');
+                    employerRadio.checked = true; // Switch back
+                }
             }
         });
         
         employerRadio.addEventListener('change', function() {
             if (this.checked) {
-                showEmployerDashboard();
+                // Check if user has permission to view employer dashboard
+                if (userRole === 'employer' || userRole === 'admin') {
+                    showEmployerDashboard();
+                } else {
+                    alert('Access requires Employer account. Please sign in as employer.');
+                    jobSeekerRadio.checked = true; // Switch back
+                }
             }
         });
     }
@@ -56,11 +84,21 @@ function setupRoleSwitching() {
     if (switchRoleBtn) {
         switchRoleBtn.addEventListener('click', function() {
             if (jobSeekerDashboard.style.display !== 'none') {
-                employerRadio.checked = true;
-                showEmployerDashboard();
+                // Trying to switch to employer
+                if (userRole === 'employer' || userRole === 'admin') {
+                    employerRadio.checked = true;
+                    showEmployerDashboard();
+                } else {
+                    alert('Access requires Employer account. Please sign in as employer.');
+                }
             } else {
-                jobSeekerRadio.checked = true;
-                showJobSeekerDashboard();
+                // Trying to switch to job seeker
+                if (userRole === 'job_seeker' || userRole === 'admin') {
+                    jobSeekerRadio.checked = true;
+                    showJobSeekerDashboard();
+                } else {
+                    alert('Access requires Job Seeker account. Please sign in as job seeker.');
+                }
             }
         });
     }
@@ -407,10 +445,24 @@ function showNotification(message, type = 'info') {
     }, 5000);
 }
 
+// Ensure navigation is visible
+function ensureNavigationVisible() {
+    const navMenuList = document.getElementById('navMenuList');
+    if (navMenuList) {
+        const navItems = navMenuList.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.style.display = '';
+            item.style.visibility = 'visible';
+        });
+        console.log('Navigation items made visible:', navItems.length);
+    }
+}
+
 // Export functions for use in other scripts
 window.Dashboard = {
     showJobSeekerDashboard,
     showEmployerDashboard,
     loadDashboardData,
-    showNotification
+    showNotification,
+    ensureNavigationVisible
 };

@@ -1,5 +1,5 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
 // Include authentication check
 require_once 'check_auth.php';
@@ -17,7 +17,7 @@ requireAuth();
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="css/dashboard.css" rel="stylesheet">
 </head>
-<body>
+<body data-user-role="<?php echo htmlspecialchars($_SESSION['role'] ?? 'job_seeker'); ?>">
 
    <!-- Navbar -->
    <nav class="navbar navbar-light bg-light sticky-top shadow-sm navbar-glass">
@@ -34,16 +34,38 @@ requireAuth();
         <div class="offcanvas-body">
         <div class="text-center mb-3">
           <img id="offcanvasAvatar" src="Images/log.png" class="rounded-circle mb-2" width="72" height="72" alt="Avatar">
-          <h5 class="fw-bold mb-2" id="offcanvasName">Guest</h5>
+          <h5 class="fw-bold mb-2" id="offcanvasName"><?php echo htmlspecialchars($_SESSION['name'] ?? 'Guest'); ?></h5>
+          <p class="text-muted small mb-2"><?php echo htmlspecialchars($_SESSION['email'] ?? ''); ?></p>
+          <p class="text-muted small mb-2">Role: <?php
+              $displayRole = $_SESSION['role'] ?? 'user';
+              if ($displayRole === 'job_seeker') {
+                  echo 'Job Seeker';
+              } elseif ($displayRole === 'employer') {
+                  echo 'Employer';
+              } elseif ($displayRole === 'admin') {
+                  echo 'Administrator';
+              } else {
+                  echo htmlspecialchars($displayRole);
+              }
+          ?></p>
+          <a href="process_logout.php" class="btn btn-outline-danger btn-sm">Logout</a>
           <button type="button" class="btn btn-outline-secondary btn-sm" data-action="logout">Logout</button>
           <hr class="mt-3">
         </div>
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0" id="navMenuList">
           <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link" href="jobs.php">Find Jobs</a></li>
-          <li class="nav-item"><a class="nav-link" href="post-job.php">Post Job</a></li>
+          <?php $role = $_SESSION['role'] ?? 'job_seeker'; ?>
+          <?php if ($role === 'job_seeker' || $role === 'admin') : ?>
+            <li class="nav-item"><a class="nav-link" href="jobs.php">Find Jobs</a></li>
+          <?php endif; ?>
+          <?php if ($role === 'employer' || $role === 'admin') : ?>
+            <li class="nav-item"><a class="nav-link" href="post-job.php">Post Job</a></li>
+          <?php endif; ?>
           <li class="nav-item"><a class="nav-link" href="about.php">About</a></li>
           <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
+          <?php if ($role === 'admin') : ?>
+            <li class="nav-item"><a class="nav-link" href="user-management.php">Users</a></li>
+          <?php endif; ?>
           <li class="nav-item"><a class="nav-link" href="user-profile.php">Profile</a></li>
         </ul>
         </div>
@@ -77,8 +99,11 @@ requireAuth();
               <div class="mb-3">
                 <img src="Images/icon.png" class="rounded-circle" width="120" height="120" alt="Avatar">
               </div>
-              <h5 class="fw-bold mb-1" id="profileName">John Doe</h5>
-              <p class="text-muted mb-3" id="profileRole">Job Seeker</p>
+              <h5 class="fw-bold mb-1" id="profileName"><?php echo htmlspecialchars($_SESSION['name'] ?? ''); ?></h5>
+              <p class="text-muted mb-3" id="profileRole"><?php 
+                $displayRole = $_SESSION['role'] ?? 'job_seeker';
+                echo ($displayRole === 'job_seeker') ? 'Job Seeker' : (($displayRole === 'employer') ? 'Employer' : 'Administrator');
+              ?></p>
               <div class="d-grid gap-2">
                 <button class="btn btn-outline-primary btn-sm" id="changeAvatarBtn">Change Photo</button>
                 <a class="btn btn-outline-secondary btn-sm" href="user-management.php">User Management</a>
@@ -98,15 +123,15 @@ requireAuth();
               <form id="profileForm" class="row g-3">
                 <div class="col-md-6">
                   <label for="firstName" class="form-label">First Name</label>
-                  <input type="text" class="form-control" id="firstName" placeholder="John" value="John">
+                  <input type="text" class="form-control" id="firstName" placeholder="John" value="<?php echo htmlspecialchars($_SESSION['firstname'] ?? ''); ?>">
                 </div>
                 <div class="col-md-6">
                   <label for="lastName" class="form-label">Last Name</label>
-                  <input type="text" class="form-control" id="lastName" placeholder="Doe" value="Doe">
+                  <input type="text" class="form-control" id="lastName" placeholder="Doe" value="<?php echo htmlspecialchars($_SESSION['lastname'] ?? ''); ?>">
                 </div>
                 <div class="col-md-6">
                   <label for="email" class="form-label">Email</label>
-                  <input type="email" class="form-control" id="email" placeholder="john@example.com" value="john@example.com">
+                  <input type="email" class="form-control" id="email" placeholder="john@example.com" value="<?php echo htmlspecialchars($_SESSION['email'] ?? ''); ?>">
                 </div>
                 <div class="col-md-6">
                   <label for="phone" class="form-label">Phone</label>
@@ -118,10 +143,10 @@ requireAuth();
                 </div>
                 <div class="col-md-6">
                   <label for="role" class="form-label">Role</label>
-                  <select id="role" class="form-select">
-                    <option selected>Job Seeker</option>
-                    <option>Employer</option>
-                    <option>Admin</option>
+                  <select id="role" class="form-select" disabled>
+                    <option <?php echo (($displayRole ?? '')==='job_seeker')?'selected':''; ?>>Job Seeker</option>
+                    <option <?php echo (($displayRole ?? '')==='employer')?'selected':''; ?>>Employer</option>
+                    <option <?php echo (($displayRole ?? '')==='admin')?'selected':''; ?>>Admin</option>
                   </select>
                 </div>
                 <div class="col-md-6">
@@ -182,7 +207,8 @@ requireAuth();
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="js/auth.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/role-control.js"></script>
   <script>
     document.getElementById('profileForm').addEventListener('submit', function (e) {
       e.preventDefault();

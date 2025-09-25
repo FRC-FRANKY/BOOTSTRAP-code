@@ -7,7 +7,7 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
     exit();
 }
 ?>
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -26,7 +26,8 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
     <!-- Your custom CSS -->
     <link href="css/registration.css" rel="stylesheet" />
 </head>
-<body class="bg-light">
+<body>
+    <div class="bg-overlay"></div>
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-md-6 col-lg-5">
@@ -48,8 +49,27 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
                             </div>
                         </div>
 
+                        <!-- Success/Error Messages -->
+                        <?php if (isset($_SESSION['registration_success'])): ?>
+                            <div class="alert alert-success py-2 mb-3 small" role="alert">
+                                <?php echo htmlspecialchars($_SESSION['registration_success']); ?>
+                                <script>
+                                    setTimeout(function() {
+                                        window.location.href = 'dashboard.php';
+                                    }, 2000);
+                                </script>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <?php if (isset($_SESSION['registration_error'])): ?>
+                            <div class="alert alert-danger py-2 mb-3 small" role="alert">
+                                <?php echo htmlspecialchars($_SESSION['registration_error']); ?>
+                            </div>
+                        <?php endif; ?>
+
                         <!-- Registration Form -->
-                        <form id="registrationForm" novalidate enctype="multipart/form-data" action="process_registration.php" method="post">
+                                               <!-- Registration Form -->
+                                               <form id="registrationForm" novalidate enctype="multipart/form-data">
                             <input type="hidden" id="role" value="employee" />
 
                             <div class="mb-3">
@@ -76,15 +96,16 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
                                 </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
-                                <input type="password"
-                                       class="form-control"
-                                       id="password"
-                                       placeholder="Enter password"
-                                       required />
-                                <div class="invalid-feedback">
-                                    Please enter a password.
+                            <div class="row g-3 align-items-center">
+                                <div class="col-auto">
+                                    <label for="inputPassword6" class="col-form-label">Password</label>
+                                </div>
+                                <div class="col-auto">
+                                    <input type="password" id="inputPassword6" class="form-control" aria-describedby="passwordHelpInline">
+                                </div>
+                                <div class="col-auto">
+                                    <span id="passwordHelpInline" class="form-text"> Must be 6 characters long.
+                                    </span>
                                 </div>
                             </div>
 
@@ -210,7 +231,7 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
                         <div class="text-center mt-3">
                             <small>
                                 Already have an account?
-                                <a href="login.php">Login</a>
+                                <a href="login.html">Login</a>
                             </small>
                         </div>
                     </div>
@@ -218,7 +239,6 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
             </div>
         </div>
     </div>
-
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 

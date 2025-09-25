@@ -21,7 +21,9 @@
                 event.preventDefault();
                 event.stopPropagation();
             }
+            // Always add validation class for styling
             form.classList.add('was-validated');
+            // Let valid forms submit naturally to PHP
         }, false);
     }
 

@@ -1,5 +1,8 @@
 <?php
-session_start();
+// Only start session if not already started
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Check if form was submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -8,6 +11,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
     $remember = isset($_POST['remember']) ? true : false;
     
+    // Debug: Log form data
+    error_log("Form data received: email='$email', password='$password'");
+    
     // Basic validation
     if (empty($email) || empty($password)) {
         $_SESSION['error'] = 'Please fill in all fields';
@@ -15,11 +21,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     
-    // Sample user database (in real app, this would be from database)
-    $users = [
+    // Load users from storage (JSON). Keep demo users as fallback
+    $storageFile = __DIR__ . '/data/users.json';
+    $users = [];
+    if (file_exists($storageFile)) {
+        $json = file_get_contents($storageFile);
+        $users = json_decode($json, true) ?: [];
+    }
+    // Append demo users (with hashed passwords) for testing
+    $demoUsers = [
         [
             'email' => 'jobseeker@demo.com',
-            'password' => 'password123',
+            'passwordHash' => password_hash('password123', PASSWORD_DEFAULT),
             'role' => 'job_seeker',
             'name' => 'Job Seeker',
             'firstname' => 'John',
@@ -27,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ],
         [
             'email' => 'employer@demo.com',
-            'password' => 'password123',
+            'passwordHash' => password_hash('password123', PASSWORD_DEFAULT),
             'role' => 'employer',
             'name' => 'Employer',
             'firstname' => 'Jane',
@@ -35,22 +48,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ],
         [
             'email' => 'admin@demo.com',
-            'password' => 'password123',
+            'passwordHash' => password_hash('password123', PASSWORD_DEFAULT),
             'role' => 'admin',
             'name' => 'Administrator',
             'firstname' => 'Admin',
             'lastname' => 'User'
         ]
     ];
+    // Merge only if not duplicate email
+    foreach ($demoUsers as $du) {
+        $exists = false;
+        foreach ($users as $u) {
+            if (isset($u['email']) && strcasecmp($u['email'], $du['email']) === 0) { $exists = true; break; }
+        }
+        if (!$exists) { $users[] = $du; }
+    }
     
     // Find user
     $user = null;
     foreach ($users as $u) {
-        if ($u['email'] === $email && $u['password'] === $password) {
-            $user = $u;
-            break;
+        if (isset($u['email']) && strcasecmp($u['email'], $email) === 0) {
+            // Support both hashed and plain (legacy) passwords
+            $ok = false;
+            if (isset($u['passwordHash'])) {
+                $ok = password_verify($password, $u['passwordHash']);
+            } elseif (isset($u['password'])) {
+                $ok = ($u['password'] === $password);
+            }
+            if ($ok) { $user = $u; break; }
         }
     }
+    
+    // Debug: Log the attempt (remove this in production)
+    error_log("Login attempt: email=$email, password=$password, found=" . ($user ? 'yes' : 'no'));
     
     if ($user) {
         // Store in SESSION

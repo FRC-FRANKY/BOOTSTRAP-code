@@ -1,5 +1,5 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -11,7 +11,7 @@ session_start();
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="css/about.css" rel="stylesheet">
 </head>
-<body>
+<body data-user-role="<?php echo htmlspecialchars($_SESSION['role'] ?? 'job_seeker'); ?>">
 
    <!-- Navbar -->
    <nav class="navbar navbar-light bg-light sticky-top shadow-sm navbar-glass">
@@ -28,11 +28,25 @@ session_start();
         <div class="offcanvas-body">
         <div class="text-center mb-3">
           <img id="offcanvasAvatar" src="Images/log.png" class="rounded-circle mb-2" width="72" height="72" alt="Avatar">
-          <h5 class="fw-bold mb-2" id="offcanvasName">Guest</h5>
+          <h5 class="fw-bold mb-2" id="offcanvasName"><?php echo htmlspecialchars($_SESSION['name'] ?? 'Guest'); ?></h5>
+          <p class="text-muted small mb-2"><?php echo htmlspecialchars($_SESSION['email'] ?? ''); ?></p>
+          <p class="text-muted small mb-2">Role: <?php
+              $displayRole = $_SESSION['role'] ?? 'user';
+              if ($displayRole === 'job_seeker') {
+                  echo 'Job Seeker';
+              } elseif ($displayRole === 'employer') {
+                  echo 'Employer';
+              } elseif ($displayRole === 'admin') {
+                  echo 'Administrator';
+              } else {
+                  echo htmlspecialchars($displayRole);
+              }
+          ?></p>
+          <a href="process_logout.php" class="btn btn-outline-danger btn-sm">Logout</a>
           <button type="button" class="btn btn-outline-secondary btn-sm" data-action="logout">Logout</button>
           <hr class="mt-3">
         </div>
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0" id="navMenuList">
           <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li>
           <li class="nav-item"><a class="nav-link" href="jobs.php">Find Jobs</a></li>
           <li class="nav-item"><a class="nav-link" href="post-job.php">Post Job</a></li>
@@ -299,7 +313,8 @@ session_start();
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   
   <!-- Authentication Service -->
-  <script src="js/auth.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/role-control.js"></script>
   
   <script src="js/about.js"></script>
 </body>
