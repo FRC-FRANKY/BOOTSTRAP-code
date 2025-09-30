@@ -69,7 +69,7 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
 
                         <!-- Registration Form -->
                                                <!-- Registration Form -->
-                                               <form id="registrationForm" novalidate enctype="multipart/form-data" action="process_registration.php" method="post">
+                                               <form id="registrationForm" novalidate enctype="multipart/form-data" method="post" action="process_registration.php">
                             <input type="hidden" id="role" name="role" value="employee" />
 
                             <div class="mb-3">
@@ -101,7 +101,7 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
                                     <label for="inputPassword6" class="col-form-label">Password</label>
                                 </div>
                                 <div class="col-auto">
-                                    <input type="password" id="inputPassword6" name="password" class="form-control" aria-describedby="passwordHelpInline">
+                                    <input type="password" id="inputPassword6" name="password" class="form-control" aria-describedby="passwordHelpInline" required>
                                 </div>
                                 <div class="col-auto">
                                     <span id="passwordHelpInline" class="form-text"> Must be 6 characters long.
@@ -151,7 +151,7 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
                                     <label for="resume" class="form-label">Upload Resume</label>
                                     <input type="file"
                                            class="form-control"
-                                           id="resume"
+                                           id="resume" name="resume"
                                            accept=".pdf,.doc,.docx"
                                            required />
                                     <div class="invalid-feedback">
