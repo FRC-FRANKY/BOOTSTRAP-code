@@ -121,7 +121,7 @@ if ($result) {
           <h5 class="mb-0">Users</h5>
           <div class="d-flex gap-2">
             <button id="exportBtn" class="btn btn-outline-secondary btn-sm">Export</button>
-            <button id="newUserBtn" class="btn btn-primary btn-sm">New User</button>
+            <a href="users_create.php" class="btn btn-primary btn-sm">New User</a>
           </div>
         </div>
         <div class="card-body">
@@ -167,8 +167,8 @@ if ($result) {
                     <td><?php echo htmlspecialchars($u['joined']); ?></td>
                     <td class="text-end">
                       <a href="user-record.php?id=<?php echo (int)$u['id']; ?>" class="btn btn-sm btn-outline-primary">View</a>
-                      <button class="btn btn-sm btn-outline-secondary">Edit</button>
-                      <button class="btn btn-sm btn-outline-danger">Suspend</button>
+                      <a href="users_edit.php?id=<?php echo (int)$u['id']; ?>" class="btn btn-sm btn-outline-secondary">Edit</a>
+                      <a href="users_delete.php?id=<?php echo (int)$u['id']; ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this user?');">Delete</a>
                     </td>
                   </tr>
                   <?php endforeach; ?>

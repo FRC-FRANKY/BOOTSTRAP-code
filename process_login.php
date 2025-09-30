@@ -3,7 +3,6 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-require_once __DIR__ . '/db_connect.php';
 
 // Check if form was submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -22,32 +21,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     
-    // Look up user in DB
-    $stmt = $conn->prepare("SELECT id, email, password_hash, role, name, firstname, lastname, status FROM users WHERE email = ? LIMIT 1");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $userRow = $result->fetch_assoc();
-    $stmt->close();
+    // Load users from storage (JSON). Keep demo users as fallback
+    $storageFile = __DIR__ . '/data/users.json';
+    $users = [];
+    if (file_exists($storageFile)) {
+        $json = file_get_contents($storageFile);
+        $users = json_decode($json, true) ?: [];
+    }
+    // Append demo users (with hashed passwords) for testing
+    $demoUsers = [
+        [
+            'email' => 'jobseeker@demo.com',
+            'passwordHash' => password_hash('password123', PASSWORD_DEFAULT),
+            'role' => 'job_seeker',
+            'name' => 'Job Seeker',
+            'firstname' => 'John',
+            'lastname' => 'Doe'
+        ],
+        [
+            'email' => 'employer@demo.com',
+            'passwordHash' => password_hash('password123', PASSWORD_DEFAULT),
+            'role' => 'employer',
+            'name' => 'Employer',
+            'firstname' => 'Jane',
+            'lastname' => 'Smith'
+        ],
+        [
+            'email' => 'admin@demo.com',
+            'passwordHash' => password_hash('password123', PASSWORD_DEFAULT),
+            'role' => 'admin',
+            'name' => 'Administrator',
+            'firstname' => 'Admin',
+            'lastname' => 'User'
+        ]
+    ];
+    // Merge only if not duplicate email
+    foreach ($demoUsers as $du) {
+        $exists = false;
+        foreach ($users as $u) {
+            if (isset($u['email']) && strcasecmp($u['email'], $du['email']) === 0) { $exists = true; break; }
+        }
+        if (!$exists) { $users[] = $du; }
+    }
+    
+    // Find user
+    $user = null;
+    foreach ($users as $u) {
+        if (isset($u['email']) && strcasecmp($u['email'], $email) === 0) {
+            // Support both hashed and plain (legacy) passwords
+            $ok = false;
+            if (isset($u['passwordHash'])) {
+                $ok = password_verify($password, $u['passwordHash']);
+            } elseif (isset($u['password'])) {
+                $ok = ($u['password'] === $password);
+            }
+            if ($ok) { $user = $u; break; }
+        }
+    }
     
     // Debug: Log the attempt (remove this in production)
     error_log("Login attempt: email=$email, password=$password, found=" . ($user ? 'yes' : 'no'));
     
-    if ($userRow && password_verify($password, $userRow['password_hash'])) {
+    if ($user) {
         // Store in SESSION
         $_SESSION['isLoggedIn'] = true;
-        $_SESSION['user_id'] = $userRow['id'];
-        $_SESSION['email'] = $userRow['email'];
-        $_SESSION['name'] = $userRow['name'];
-        $_SESSION['role'] = $userRow['role'];
-        $_SESSION['firstname'] = $userRow['firstname'];
-        $_SESSION['lastname'] = $userRow['lastname'];
+        $_SESSION['user_id'] = $user['email'];
+        $_SESSION['email'] = $user['email'];
+        $_SESSION['name'] = $user['name'];
+        $_SESSION['role'] = $user['role'];
+        $_SESSION['firstname'] = $user['firstname'];
+        $_SESSION['lastname'] = $user['lastname'];
         
         // Store in COOKIES if remember me is checked (valid 7 days)
         if ($remember) {
-            setcookie("user_email", $userRow['email'], time() + (7 * 24 * 3600), "/");
-            setcookie("user_role", $userRow['role'], time() + (7 * 24 * 3600), "/");
-            setcookie("user_name", $userRow['name'], time() + (7 * 24 * 3600), "/");
+            setcookie("user_email", $user['email'], time() + (7 * 24 * 3600), "/");
+            setcookie("user_role", $user['role'], time() + (7 * 24 * 3600), "/");
+            setcookie("user_name", $user['name'], time() + (7 * 24 * 3600), "/");
         }
         
         // Clear any error messages
