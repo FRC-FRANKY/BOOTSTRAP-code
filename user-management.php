@@ -1,5 +1,13 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
+require_once __DIR__ . '/db_connect.php';
+
+// Fetch users from DB
+$users = [];
+$result = $conn->query("SELECT id, name, email, role, status, DATE_FORMAT(created_at, '%Y-%m-%d') AS joined FROM users ORDER BY id DESC");
+if ($result) {
+  while ($row = $result->fetch_assoc()) { $users[] = $row; }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -130,30 +138,43 @@ if (session_status() === PHP_SESSION_NONE) { session_start(); }
                 </tr>
               </thead>
               <tbody id="usersTable">
-                <tr>
-                  <td>John Doe</td>
-                  <td>john@example.com</td>
-                  <td><span class="badge bg-primary">Job Seeker</span></td>
-                  <td><span class="badge bg-success">Active</span></td>
-                  <td>2024-01-10</td>
-                  <td class="text-end">
-                    <a href="user-record.php?id=1" class="btn btn-sm btn-outline-primary">View</a>
-                    <button class="btn btn-sm btn-outline-secondary">Edit</button>
-                    <button class="btn btn-sm btn-outline-danger">Suspend</button>
-                  </td>
-                </tr>
-                <tr>
-                  <td>Jane Smith</td>
-                  <td>jane@company.com</td>
-                  <td><span class="badge bg-warning text-dark">Employer</span></td>
-                  <td><span class="badge bg-success">Active</span></td>
-                  <td>2024-02-05</td>
-                  <td class="text-end">
-                    <a href="user-record.php?id=2" class="btn btn-sm btn-outline-primary">View</a>
-                    <button class="btn btn-sm btn-outline-secondary">Edit</button>
-                    <button class="btn btn-sm btn-outline-danger">Suspend</button>
-                  </td>
-                </tr>
+                <?php if (count($users) > 0): ?>
+                  <?php foreach ($users as $u): ?>
+                  <tr>
+                    <td><?php echo htmlspecialchars($u['name']); ?></td>
+                    <td><?php echo htmlspecialchars($u['email']); ?></td>
+                    <td>
+                      <?php
+                        $role = $u['role'];
+                        if ($role === 'job_seeker') {
+                          echo '<span class="badge bg-primary">Job Seeker</span>';
+                        } elseif ($role === 'employer') {
+                          echo '<span class="badge bg-warning text-dark">Employer</span>';
+                        } elseif ($role === 'admin') {
+                          echo '<span class="badge bg-dark">Admin</span>';
+                        } else {
+                          echo '<span class="badge bg-secondary">' . htmlspecialchars($role) . '</span>';
+                        }
+                      ?>
+                    </td>
+                    <td>
+                      <?php
+                        $status = $u['status'] ?: 'active';
+                        $statusClass = ($status === 'active') ? 'success' : (($status === 'suspended') ? 'danger' : 'secondary');
+                        echo '<span class="badge bg-' . $statusClass . '">' . htmlspecialchars(ucfirst($status)) . '</span>';
+                      ?>
+                    </td>
+                    <td><?php echo htmlspecialchars($u['joined']); ?></td>
+                    <td class="text-end">
+                      <a href="user-record.php?id=<?php echo (int)$u['id']; ?>" class="btn btn-sm btn-outline-primary">View</a>
+                      <button class="btn btn-sm btn-outline-secondary">Edit</button>
+                      <button class="btn btn-sm btn-outline-danger">Suspend</button>
+                    </td>
+                  </tr>
+                  <?php endforeach; ?>
+                <?php else: ?>
+                  <tr><td colspan="6" class="text-center text-muted">No users found.</td></tr>
+                <?php endif; ?>
               </tbody>
             </table>
           </div>

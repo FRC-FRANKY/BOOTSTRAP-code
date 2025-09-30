@@ -1,11 +1,28 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
-
-// Include authentication check
 require_once 'check_auth.php';
+require_once __DIR__ . '/db_connect.php';
 
 // Require authentication to view this page
 requireAuth();
+
+// Refresh current user details from DB if available
+$currentEmail = $_SESSION['email'] ?? null;
+if ($currentEmail) {
+  $stmt = $conn->prepare("SELECT id, email, name, firstname, lastname, role FROM users WHERE email = ? LIMIT 1");
+  $stmt->bind_param("s", $currentEmail);
+  $stmt->execute();
+  $res = $stmt->get_result();
+  if ($row = $res->fetch_assoc()) {
+    $_SESSION['user_id'] = $row['id'];
+    $_SESSION['email'] = $row['email'];
+    $_SESSION['name'] = $row['name'];
+    $_SESSION['firstname'] = $row['firstname'];
+    $_SESSION['lastname'] = $row['lastname'];
+    $_SESSION['role'] = $row['role'];
+  }
+  $stmt->close();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">

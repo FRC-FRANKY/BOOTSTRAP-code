@@ -3,6 +3,7 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+require_once __DIR__ . '/db_connect.php';
 
 // Check if form was submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -54,47 +55,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $firstname = $nameParts[0];
     $lastname = isset($nameParts[1]) ? $nameParts[1] : '';
     
-    // Persist user to storage (JSON file). In production, use a database
-    $storageFile = __DIR__ . '/data/users.json';
-    if (!is_dir(__DIR__ . '/data')) {
-        mkdir(__DIR__ . '/data', 0777, true);
-    }
-    $users = [];
-    if (file_exists($storageFile)) {
-        $json = file_get_contents($storageFile);
-        $users = json_decode($json, true) ?: [];
-    }
-    // Prevent duplicate emails
-    foreach ($users as $u) {
-        if (isset($u['email']) && strcasecmp($u['email'], $email) === 0) {
-            $_SESSION['registration_error'] = 'An account with that email already exists.';
-            header("Location: Registration.php");
-            exit();
-        }
-    }
     // Map registration roles to system roles & hash password
     $systemRole = ($role === 'employee') ? 'job_seeker' : 'employer';
     $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-    $newUser = [
-        'email' => $email,
-        'passwordHash' => $passwordHash,
-        'role' => $systemRole,
-        'name' => $fullname,
-        'firstname' => $firstname,
-        'lastname' => $lastname,
-        'job_title' => $jobTitle ?? null,
-        'phone' => $phone ?? null,
-        'dob' => $dob ?? null,
-        'bio' => $bio ?? null,
-        'company_name' => $companyName ?? null,
-        'company_reg_number' => $companyRegNumber ?? null,
-        'company_address' => $companyAddress ?? null,
-        'company_phone' => $companyPhone ?? null,
-        'company_linkedin' => $companyLinkedIn ?? null,
-        'created_at' => date('c')
-    ];
-    $users[] = $newUser;
-    file_put_contents($storageFile, json_encode($users, JSON_PRETTY_PRINT));
+
+    // Prevent duplicate emails in DB
+    $dupStmt = $conn->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
+    $dupStmt->bind_param("s", $email);
+    $dupStmt->execute();
+    $dupStmt->store_result();
+    if ($dupStmt->num_rows > 0) {
+        $_SESSION['registration_error'] = 'An account with that email already exists.';
+        header("Location: Registration.php");
+        exit();
+    }
+    $dupStmt->close();
+
+    // Insert into DB
+    $insertSql = "INSERT INTO users (email, password_hash, role, name, firstname, lastname) VALUES (?, ?, ?, ?, ?, ?)";
+    $insert = $conn->prepare($insertSql);
+    $insert->bind_param("ssssss", $email, $passwordHash, $systemRole, $fullname, $firstname, $lastname);
+    if (!$insert->execute()) {
+        error_log('Registration insert failed: ' . $insert->error);
+        $_SESSION['registration_error'] = 'Registration failed. Please try again.';
+        header("Location: Registration.php");
+        exit();
+    }
+    $insert->close();
 
     // Store in SESSION
     $_SESSION['isLoggedIn'] = true;
