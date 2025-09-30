@@ -1,4 +1,3 @@
-// student_lab_crud/db_connect.php
 <?php
 $host = "localhost";
 $user = "root";   // default for XAMPP/WAMP

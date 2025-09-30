@@ -69,14 +69,14 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
 
                         <!-- Registration Form -->
                                                <!-- Registration Form -->
-                                               <form id="registrationForm" novalidate enctype="multipart/form-data">
-                            <input type="hidden" id="role" value="employee" />
+                                               <form id="registrationForm" novalidate enctype="multipart/form-data" action="process_registration.php" method="post">
+                            <input type="hidden" id="role" name="role" value="employee" />
 
                             <div class="mb-3">
                                 <label for="fullname" class="form-label">Full Name</label>
                                 <input type="text"
                                        class="form-control"
-                                       id="fullname"
+                                       id="fullname" name="fullname"
                                        placeholder="Enter your name"
                                        required />
                                 <div class="invalid-feedback">
@@ -88,7 +88,7 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
                                 <label for="email" class="form-label">Email address</label>
                                 <input type="email"
                                        class="form-control"
-                                       id="email"
+                                       id="email" name="email"
                                        placeholder="Enter email"
                                        required />
                                 <div class="invalid-feedback">
@@ -101,7 +101,7 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
                                     <label for="inputPassword6" class="col-form-label">Password</label>
                                 </div>
                                 <div class="col-auto">
-                                    <input type="password" id="inputPassword6" class="form-control" aria-describedby="passwordHelpInline">
+                                    <input type="password" id="inputPassword6" name="password" class="form-control" aria-describedby="passwordHelpInline">
                                 </div>
                                 <div class="col-auto">
                                     <span id="passwordHelpInline" class="form-text"> Must be 6 characters long.
@@ -115,14 +115,14 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
                                     <label for="jobTitle" class="form-label">Job Title</label>
                                     <input type="text"
                                            class="form-control"
-                                           id="jobTitle"
+                                           id="jobTitle" name="jobTitle"
                                            placeholder="e.g. Web Developer" />
                                 </div>
                                 <div class="mb-3">
                                     <label for="employeePhone" class="form-label">Phone Number</label>
                                     <input type="tel"
                                            class="form-control"
-                                           id="employeePhone"
+                                           id="employeePhone" name="employeePhone"
                                            placeholder="Enter your phone number"
                                            pattern="^\+?[0-9\s\-]{7,15}$"
                                            required />
@@ -134,7 +134,7 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
                                     <label for="dob" class="form-label">Date of Birth</label>
                                     <input type="date"
                                            class="form-control"
-                                           id="dob"
+                                           id="dob" name="dob"
                                            required />
                                     <div class="invalid-feedback">
                                         Please enter your date of birth.
@@ -143,7 +143,7 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
                                 <div class="mb-3">
                                     <label for="bio" class="form-label">Short Bio</label>
                                     <textarea class="form-control"
-                                              id="bio"
+                                              id="bio" name="bio"
                                               rows="3"
                                               placeholder="Tell us a little about yourself"></textarea>
                                 </div>
@@ -166,7 +166,7 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
                                     <label for="companyName" class="form-label">Company Name</label>
                                     <input type="text"
                                            class="form-control"
-                                           id="companyName"
+                                           id="companyName" name="companyName"
                                            placeholder="Enter your company name"
                                            required />
                                     <div class="invalid-feedback">
@@ -178,7 +178,7 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
                                     <label for="companyRegNumber" class="form-label">Company Registration Number</label>
                                     <input type="text"
                                            class="form-control"
-                                           id="companyRegNumber"
+                                           id="companyRegNumber" name="companyRegNumber"
                                            placeholder="Enter company registration or tax ID"
                                            required />
                                     <div class="invalid-feedback">
@@ -190,7 +190,7 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
                                     <label for="companyAddress" class="form-label">Company Address</label>
                                     <input type="text"
                                            class="form-control"
-                                           id="companyAddress"
+                                           id="companyAddress" name="companyAddress"
                                            placeholder="Enter company address"
                                            required />
                                     <div class="invalid-feedback">
@@ -202,7 +202,7 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
                                     <label for="companyPhone" class="form-label">Company Phone Number</label>
                                     <input type="tel"
                                            class="form-control"
-                                           id="companyPhone"
+                                           id="companyPhone" name="companyPhone"
                                            placeholder="Enter company phone number"
                                            pattern="^\+?[0-9\s\-]{7,15}$"
                                            required />
@@ -215,7 +215,7 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
                                     <label for="companyLinkedIn" class="form-label">LinkedIn Profile (Optional)</label>
                                     <input type="url"
                                            class="form-control"
-                                           id="companyLinkedIn"
+                                           id="companyLinkedIn" name="companyLinkedIn"
                                            placeholder="https://linkedin.com/company/your-company" />
                                     <div class="invalid-feedback">
                                         Please enter a valid URL.
@@ -231,7 +231,7 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
                         <div class="text-center mt-3">
                             <small>
                                 Already have an account?
-                                <a href="login.html">Login</a>
+                                <a href="login.php">Login</a>
                             </small>
                         </div>
                     </div>
