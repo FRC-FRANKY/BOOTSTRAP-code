@@ -24,6 +24,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $companyAddress = $_POST['companyAddress'] ?? null;
     $companyPhone = $_POST['companyPhone'] ?? null;
     $companyLinkedIn = $_POST['companyLinkedIn'] ?? null;
+
+    // Handle resume upload (prefer PDF)
+    $resumePath = null;
+    if (isset($_FILES['resume']) && is_array($_FILES['resume']) && ($_FILES['resume']['error'] === UPLOAD_ERR_OK)) {
+        $allowedMime = ['application/pdf'];
+        $allowedExt = ['pdf'];
+        $tmpPath = $_FILES['resume']['tmp_name'];
+        $originalName = $_FILES['resume']['name'];
+        $fileSize = (int)$_FILES['resume']['size'];
+
+        $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($tmpPath) ?: 'application/octet-stream';
+
+        if (!in_array($ext, $allowedExt, true) || !in_array($mime, $allowedMime, true)) {
+            $_SESSION['registration_error'] = 'Please upload a valid PDF resume.';
+            header('Location: Registration.php');
+            exit();
+        }
+        if ($fileSize > 5 * 1024 * 1024) { // 5MB limit
+            $_SESSION['registration_error'] = 'Resume file is too large (max 5MB).';
+            header('Location: Registration.php');
+            exit();
+        }
+
+        $uploadDir = __DIR__ . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'resumes';
+        if (!is_dir($uploadDir)) {
+            if (!mkdir($uploadDir, 0775, true) && !is_dir($uploadDir)) {
+                $_SESSION['registration_error'] = 'Failed to prepare upload directory.';
+                header('Location: Registration.php');
+                exit();
+            }
+        }
+
+        $safeBase = preg_replace('/[^a-zA-Z0-9._-]/', '_', $originalName);
+        $uniqueName = time() . '_' . bin2hex(random_bytes(4)) . '_' . $safeBase;
+        $destPath = $uploadDir . DIRECTORY_SEPARATOR . $uniqueName;
+
+        if (!move_uploaded_file($tmpPath, $destPath)) {
+            $_SESSION['registration_error'] = 'Failed to save uploaded resume.';
+            header('Location: Registration.php');
+            exit();
+        }
+
+        // Store relative path for serving later
+        $resumePath = 'uploads/resumes/' . $uniqueName;
+    } elseif (($role === 'employee') && (!isset($_FILES['resume']) || $_FILES['resume']['error'] !== UPLOAD_ERR_NO_FILE)) {
+        // If employee role, require a resume when a file was attempted but failed
+        if (!isset($_FILES['resume']) || $_FILES['resume']['error'] === UPLOAD_ERR_NO_FILE) {
+            $_SESSION['registration_error'] = 'Please upload your resume as PDF.';
+            header('Location: Registration.php');
+            exit();
+        }
+    }
     
     // Basic validation
     if ($fullname === '' || $email === '' || $password === '') {
@@ -64,10 +118,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $check->close();
     
     // Insert user
-    $sql = 'INSERT INTO users (email, password_hash, role, name, firstname, lastname, job_title, phone, dob, bio, company_name, company_reg_number, company_address, company_phone, company_linkedin) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
+    $sql = 'INSERT INTO users (email, password_hash, role, name, firstname, lastname, job_title, phone, dob, bio, resume_path, company_name, company_reg_number, company_address, company_phone, company_linkedin) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
     $stmt = $conn->prepare($sql);
     $stmt->bind_param(
-        'sssssssssssssss',
+        'ssssssssssssssss',
         $email,
         $passwordHash,
         $systemRole,
@@ -78,6 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $phone,
         $dob,
         $bio,
+        $resumePath,
         $companyName,
         $companyRegNumber,
         $companyAddress,

@@ -148,14 +148,14 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
                                               placeholder="Tell us a little about yourself"></textarea>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="resume" class="form-label">Upload Resume</label>
+                                    <label for="resume" class="form-label">Upload Resume (PDF only)</label>
                                     <input type="file"
                                            class="form-control"
                                            id="resume" name="resume"
-                                           accept=".pdf,.doc,.docx"
+                                           accept=".pdf,application/pdf"
                                            required />
                                     <div class="invalid-feedback">
-                                        Please upload your resume (PDF, DOC, or DOCX).
+                                        Please upload your resume as a PDF file.
                                     </div>
                                 </div>
                             </div>
