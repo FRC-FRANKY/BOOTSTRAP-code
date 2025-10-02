@@ -246,7 +246,7 @@ function updateApplicationsTable(applications) {
         tableBody.innerHTML = `
             <tr>
                 <td colspan="6" class="text-center text-muted py-4">
-                    No applications yet. <a href="jobs.html">Start applying for jobs!</a>
+                    No applications yet. <a href="jobs.php">Start applying for jobs!</a>
                 </td>
             </tr>
         `;
@@ -275,7 +275,7 @@ function updateJobsTable(postedJobs) {
         tableBody.innerHTML = `
             <tr>
                 <td colspan="5" class="text-center text-muted py-4">
-                    No jobs posted yet. <a href="post-job.html">Post your first job!</a>
+                    No jobs posted yet. <a href="post-job.php">Post your first job!</a>
                 </td>
             </tr>
         `;
