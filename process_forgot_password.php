@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $email = trim($_POST['email'] ?? '');
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $_SESSION['reset_error'] = 'Enter a valid email address.';
-    header('Location: forgot-password.php');
+    header('Location: forgot-password.php?email=' . urlencode($email));
     exit();
 }
 
@@ -27,7 +27,7 @@ $existsStmt->close();
 
 if (!$user) {
     $_SESSION['reset_error'] = 'No account found with this email address. Please check your email or create a new account.';
-    header('Location: forgot-password.php');
+    header('Location: forgot-password.php?email=' . urlencode($email));
     exit();
 }
 
@@ -39,7 +39,7 @@ $rlRes = $rlStmt->get_result()->fetch_assoc();
 $rlStmt->close();
 if ($rlRes && (int)$rlRes['c'] >= 3) {
     $_SESSION['reset_error'] = 'Too many recent reset attempts. Please wait 15 minutes before trying again.';
-    header('Location: forgot-password.php');
+    header('Location: forgot-password.php?email=' . urlencode($email));
     exit();
 }
 
@@ -51,7 +51,7 @@ $ins = $conn->prepare('INSERT INTO password_resets (email, token, code, expires_
 $ins->bind_param('ssss', $email, $token, $code, $expiresAt);
 if (!$ins->execute()) {
     $_SESSION['reset_error'] = 'Could not start password reset.';
-    header('Location: forgot-password.php');
+    header('Location: forgot-password.php?email=' . urlencode($email));
     exit();
 }
 $ins->close();
@@ -74,7 +74,7 @@ if ($sendResult['ok'] ?? false) {
     $_SESSION['reset_notice'] = 'We sent a password reset code to your email address.';
 } else {
     $_SESSION['reset_error'] = 'Failed to send email: ' . ($sendResult['error'] ?? 'Unknown error');
-    header('Location: forgot-password.php');
+    header('Location: forgot-password.php?email=' . urlencode($email));
     exit();
 }
 

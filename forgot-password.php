@@ -1,5 +1,8 @@
 <?php
 session_start();
+$resetError = $_SESSION['reset_error'] ?? '';
+$resetNotice = $_SESSION['reset_notice'] ?? '';
+unset($_SESSION['reset_error'], $_SESSION['reset_notice']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -26,9 +29,15 @@ session_start();
             </div>
             <p class="text-muted mb-0 mt-2">Enter your email to reset your password.</p>
             
-            <div id="resetMessage" class="alert alert-info d-none py-2 mb-3 small" role="alert">
-              We'll send you a password reset link if an account exists with that email.
-            </div>
+            <?php if ($resetError !== ''): ?>
+              <div class="alert alert-danger py-2 mb-3 small" role="alert">
+                <?php echo htmlspecialchars($resetError); ?>
+              </div>
+            <?php elseif ($resetNotice !== ''): ?>
+              <div class="alert alert-success py-2 mb-3 small" role="alert">
+                <?php echo htmlspecialchars($resetNotice); ?>
+              </div>
+            <?php endif; ?>
             
             <form class="needs-validation" novalidate action="process_forgot_password.php" method="post" autocomplete="on">
               <!-- Email -->
@@ -40,6 +49,7 @@ session_start();
                   id="email"
                   name="email"
                   placeholder="Enter your email address"
+                  value="<?php echo htmlspecialchars($_GET['email'] ?? ''); ?>"
                   required
                   aria-describedby="emailHelp"
                 />
