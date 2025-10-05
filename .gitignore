@@ -3,6 +3,7 @@
 *.user
 *.suo
 
+
 # Ignore build results
 bin/
 obj/
@@ -15,4 +16,5 @@ obj/
 Thumbs.db
 .DS_Store
 
+# Ignore Composer dependencies
 /vendor/
