@@ -192,7 +192,7 @@ if (session_status() === PHP_SESSION_NONE) { session_start(); }
             <li><strong>Experience:</strong> 5+ years leading software projects</li>
             <li><strong>Education:</strong> B.S. in Information Technology</li>
           </ul>
-          <p class="mb-0"><a href="resume-christian.php">Open full resume page</a></p>
+          <p class="mb-0"><a href="resume-christian.php" target="_blank">Open full resume page</a></p>
         </div>
       </div>
     </div>
@@ -212,7 +212,7 @@ if (session_status() === PHP_SESSION_NONE) { session_start(); }
             <li><strong>Experience:</strong> 3+ years in system analysis and DB design</li>
             <li><strong>Education:</strong> B.S. in Computer Science</li>
           </ul>
-          <p class="mb-0"><a href="resume-alyssa.php">Open full resume page</a></p>
+          <p class="mb-0"><a href="resume-alyssa.php" target="_blank">Open full resume page</a></p>
         </div>
       </div>
     </div>
@@ -232,7 +232,7 @@ if (session_status() === PHP_SESSION_NONE) { session_start(); }
             <li><strong>Experience:</strong> Built responsive web apps and dashboards</li>
             <li><strong>Education:</strong> B.S. in Information Systems</li>
           </ul>
-          <p class="mb-0"><a href="resume-frank.php">Open full resume page</a></p>
+          <p class="mb-0"><a href="resume-frank.php" target="_blank">Open full resume page</a></p>
         </div>
       </div>
     </div>
@@ -252,7 +252,7 @@ if (session_status() === PHP_SESSION_NONE) { session_start(); }
             <li><strong>Experience:</strong> Contributed to multiple product releases</li>
             <li><strong>Education:</strong> B.S. in Information Technology</li>
           </ul>
-          <p class="mb-0"><a href="resume-shine.php">Open full resume page</a></p>
+          <p class="mb-0"><a href="resume-shine.php" target="_blank">Open full resume page</a></p>
         </div>
       </div>
     </div>

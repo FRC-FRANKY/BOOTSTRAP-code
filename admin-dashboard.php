@@ -31,7 +31,7 @@ session_start();
       JobFilter | Admin
     </div>
     <a href="#" class="active" data-section="dashboard"><i class="fas fa-home me-2"></i>Dashboard</a>
-    <a href="user-management.php" data-section="users"><i class="fas fa-users me-2"></i>Users</a>
+    <a href="#" data-section="users"><i class="fas fa-users me-2"></i>Users</a>
     <a href="#" data-section="employers"><i class="fas fa-building me-2"></i>Employers</a>
     <a href="#" data-section="jobs"><i class="fas fa-briefcase me-2"></i>Jobs</a>
     <a href="#" data-section="applications"><i class="fas fa-file-alt me-2"></i>Applications</a>

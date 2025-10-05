@@ -30,7 +30,7 @@ session_start();
               We'll send you a password reset link if an account exists with that email.
             </div>
             
-            <form class="needs-validation" novalidate action="#" method="post" autocomplete="on">
+            <form class="needs-validation" novalidate action="process_forgot_password.php" method="post" autocomplete="on">
               <!-- Email -->
               <div class="mb-3">
                 <label for="email" class="form-label">Email Address</label>

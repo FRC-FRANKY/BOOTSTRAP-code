@@ -105,13 +105,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $systemRole = ($role === 'employee') ? 'job_seeker' : (($role === 'employer') ? 'employer' : 'job_seeker');
     $passwordHash = password_hash($password, PASSWORD_DEFAULT);
     
-    // Check duplicate email
-    $check = $conn->prepare('SELECT id FROM users WHERE email = ? LIMIT 1');
-    $check->bind_param('s', $email);
+    // Check duplicate email and role combination
+    $check = $conn->prepare('SELECT id FROM users WHERE email = ? AND role = ? LIMIT 1');
+    $check->bind_param('ss', $email, $systemRole);
     $check->execute();
     $check->store_result();
     if ($check->num_rows > 0) {
-        $_SESSION['registration_error'] = 'An account with that email already exists.';
+        $roleDisplay = ($systemRole === 'job_seeker') ? 'Employee' : 'Employer';
+        $_SESSION['registration_error'] = "An account with that email already exists for the $roleDisplay role. You can register with a different role or use a different email.";
         header('Location: Registration.php');
         exit();
     }
