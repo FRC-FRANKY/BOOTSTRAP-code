@@ -87,6 +87,76 @@ if (!$conn->query($createPasswordResetsSql)) {
     die('Failed to ensure password_resets table: ' . $conn->error);
 }
 
+// 6) Create jobs table
+$createJobsSql = "
+CREATE TABLE IF NOT EXISTS jobs (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  description TEXT NOT NULL,
+  location VARCHAR(255) NOT NULL,
+  job_type ENUM('full-time', 'part-time', 'contract', 'internship', 'temporary', 'freelance') NOT NULL,
+  category VARCHAR(100) NOT NULL,
+  salary_range VARCHAR(100) NULL,
+  company_name VARCHAR(255) NOT NULL,
+  company_website VARCHAR(255) NULL,
+  company_logo VARCHAR(255) NULL,
+  posted_by INT UNSIGNED NOT NULL,
+  posted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  expires_at DATETIME NULL,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  FOREIGN KEY (posted_by) REFERENCES users(id) ON DELETE CASCADE,
+  FULLTEXT INDEX idx_fulltext (title, description, location, company_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
+
+if (!$conn->query($createJobsSql)) {
+    die('Failed to ensure jobs table: ' . $conn->error);
+}
+// Optional: index to speed up lookups by title and location
+$conn->query("CREATE INDEX IF NOT EXISTS idx_jobs_title_location ON jobs(title, location)");
+
+
+// 7) Create applications table
+$createApplicationsSql = "
+CREATE TABLE IF NOT EXISTS applications (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  job_id INT UNSIGNED NOT NULL,
+  user_id INT UNSIGNED NOT NULL,
+  cover_letter TEXT NULL,
+  resume_path VARCHAR(255) NULL,
+  applied_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  status ENUM('applied', 'under_review', 'interview', 'offered', 'rejected') NOT NULL DEFAULT 'applied',
+  FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  UNIQUE KEY unique_application (job_id, user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
+
+if (!$conn->query($createApplicationsSql)) {
+    die('Failed to ensure applications table: ' . $conn->error);
+}
+
+// Close server connection (keep $conn for app use)
+$serverConn->close();
+
+
+//For contact form
+// 8) Create contact_submissions table
+$createContactSql = "
+CREATE TABLE IF NOT EXISTS contact_submissions (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  subject VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
+
+if (!$conn->query($createContactSql)) {
+    die('Failed to ensure contact_submissions table: ' . $conn->error);
+}
+// Optional: index to speed up lookups by email
+$conn->query("CREATE INDEX IF NOT EXISTS idx_contact_email ON contact_submissions(email)");
+
+// Now $conn can be used for application queries
 ?>
 
 
