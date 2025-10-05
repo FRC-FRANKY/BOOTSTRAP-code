@@ -10,7 +10,7 @@ $user = getenv('DB_USER') ?: 'root';
 $pass = getenv('DB_PASS') ?: '';
 $db   = getenv('DB_NAME') ?: 'jobfilter_db';
 // Port support (default 3306)
-$port = getenv('DB_PORT') ? (int)getenv('DB_PORT') : 3306;
+$port = getenv('DB_PORT') ? (int)getenv('DB_PORT') : 3307;
 
 // 1) Connect to server (no DB yet)
 $serverConn = new mysqli($host, $user, $pass, null, $port);
