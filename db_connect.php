@@ -2,6 +2,9 @@
 // JobFilter/db_connect.php
 // Creates MySQL database and users table if they don't exist
 
+// Load .env variables if present
+require_once __DIR__ . '/env.php';
+
 $host = getenv('DB_HOST') ?: '127.0.0.1';
 $user = getenv('DB_USER') ?: 'root';
 $pass = getenv('DB_PASS') ?: '';
@@ -87,25 +90,20 @@ if (!$conn->query($createPasswordResetsSql)) {
     die('Failed to ensure password_resets table: ' . $conn->error);
 }
 
-// 6) Create jobs table
-$createJobsSql = "
+// This is Posting JOBS
+// 5) Create jobs table(this is for job postings by employers)
+$createJobsSql = "      
 CREATE TABLE IF NOT EXISTS jobs (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
   description TEXT NOT NULL,
-  location VARCHAR(255) NOT NULL,
-  job_type ENUM('full-time', 'part-time', 'contract', 'internship', 'temporary', 'freelance') NOT NULL,
-  category VARCHAR(100) NOT NULL,
-  salary_range VARCHAR(100) NULL,
   company_name VARCHAR(255) NOT NULL,
-  company_website VARCHAR(255) NULL,
-  company_logo VARCHAR(255) NULL,
+  location VARCHAR(255) NOT NULL,
+  salary DECIMAL(10, 2) NULL,
   posted_by INT UNSIGNED NOT NULL,
-  posted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  expires_at DATETIME NULL,
-  is_active TINYINT(1) NOT NULL DEFAULT 1,
-  FOREIGN KEY (posted_by) REFERENCES users(id) ON DELETE CASCADE,
-  FULLTEXT INDEX idx_fulltext (title, description, location, company_name)
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (posted_by) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
 
 if (!$conn->query($createJobsSql)) {
@@ -115,31 +113,54 @@ if (!$conn->query($createJobsSql)) {
 $conn->query("CREATE INDEX IF NOT EXISTS idx_jobs_title_location ON jobs(title, location)");
 
 
-// 7) Create applications table
+// 6) Create applications table
 $createApplicationsSql = "
 CREATE TABLE IF NOT EXISTS applications (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   job_id INT UNSIGNED NOT NULL,
-  user_id INT UNSIGNED NOT NULL,
+  applicant_id INT UNSIGNED NOT NULL,
   cover_letter TEXT NULL,
   resume_path VARCHAR(255) NULL,
+  status VARCHAR(50) NOT NULL DEFAULT 'pending',
   applied_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  status ENUM('applied', 'under_review', 'interview', 'offered', 'rejected') NOT NULL DEFAULT 'applied',
   FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  UNIQUE KEY unique_application (job_id, user_id)
+  FOREIGN KEY (applicant_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
 
 if (!$conn->query($createApplicationsSql)) {
     die('Failed to ensure applications table: ' . $conn->error);
 }
 
+// Ensure required columns exist on older DBs
+$colJob = $conn->query("SHOW COLUMNS FROM applications LIKE 'job_id'");
+if ($colJob && $colJob->num_rows === 0) {
+    $conn->query("ALTER TABLE applications ADD COLUMN job_id INT UNSIGNED NOT NULL AFTER id");
+    // Add FK if missing
+    $conn->query("ALTER TABLE applications ADD CONSTRAINT fk_applications_job FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE");
+}
+
+$colApplicant = $conn->query("SHOW COLUMNS FROM applications LIKE 'applicant_id'");
+if ($colApplicant && $colApplicant->num_rows === 0) {
+    $conn->query("ALTER TABLE applications ADD COLUMN applicant_id INT UNSIGNED NOT NULL AFTER job_id");
+    // Add FK if missing
+    $conn->query("ALTER TABLE applications ADD CONSTRAINT fk_applications_applicant FOREIGN KEY (applicant_id) REFERENCES users(id) ON DELETE CASCADE");
+}
+
+// Optional: index to speed up lookups by job_id and applicant_id (create only if both columns exist)
+$haveJob = $conn->query("SHOW COLUMNS FROM applications LIKE 'job_id'");
+$haveApplicant = $conn->query("SHOW COLUMNS FROM applications LIKE 'applicant_id'");
+if ($haveJob && $haveJob->num_rows > 0 && $haveApplicant && $haveApplicant->num_rows > 0) {
+    $idx = $conn->query("SHOW INDEX FROM applications WHERE Key_name = 'idx_applications_job_applicant'");
+    if (!$idx || $idx->num_rows === 0) {
+        $conn->query("CREATE INDEX idx_applications_job_applicant ON applications(job_id, applicant_id)");
+    }
+}
+
 // Close server connection (keep $conn for app use)
 $serverConn->close();
 
-
 //For contact form
-// 8) Create contact_submissions table
+// 7) Create contact_submissions table
 $createContactSql = "
 CREATE TABLE IF NOT EXISTS contact_submissions (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -156,7 +177,6 @@ if (!$conn->query($createContactSql)) {
 // Optional: index to speed up lookups by email
 $conn->query("CREATE INDEX IF NOT EXISTS idx_contact_email ON contact_submissions(email)");
 
-// Now $conn can be used for application queries
 ?>
 
 
