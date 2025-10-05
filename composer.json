@@ -1,0 +1,19 @@
+{
+    "name": "htdocs/bootstrap-code",
+    "description": "BOOTSTRAP-code",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Htdocs\\BootstrapCode\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "FRC-FRANKY",
+            "email": "frankoliverbentoy23@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {}
+}
