@@ -12,7 +12,7 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Login</title>
+    <title>JobFilter-Login</title>
     <link rel="icon" type="image/svg+xml" href="Images/log.png" />
 
     <!-- Bootstrap CSS -->
