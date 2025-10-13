@@ -415,11 +415,12 @@ function filterJobs() {
             if (/[+-]/.test(salaryValue)) {
                 isVisible = checkSalaryRange(card, salaryValue);
             } else {
-                // Treat as minimum salary
-                const minSalary = parseInt(salaryValue);
-                if (!isNaN(minSalary) && minSalary > 0) {
+                // Treat as exact salary match (show jobs where salary equals the input)
+                const targetSalary = parseInt(salaryValue);
+                if (!isNaN(targetSalary) && targetSalary > 0) {
                     const cardMinSalary = extractMinSalary(card);
-                    isVisible = cardMinSalary >= minSalary;
+                    const cardMaxSalary = extractSalary(card);
+                    isVisible = (cardMinSalary === targetSalary) || (cardMaxSalary === targetSalary);
                 }
             }
         }

@@ -4,6 +4,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+require_once __DIR__ . '/db_connect.php';
+
 // Check if user is authenticated
 if (!isset($_SESSION['isLoggedIn']) || $_SESSION['isLoggedIn'] !== true) {
     header("Location: login.php");
@@ -13,90 +15,88 @@ if (!isset($_SESSION['isLoggedIn']) || $_SESSION['isLoggedIn'] !== true) {
 // Check if form was submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Get form data
-    $jobTitle = $_POST['jobTitle'] ?? '';
-    $companyName = $_POST['companyName'] ?? '';
-    $location = $_POST['location'] ?? '';
-    $jobCategory = $_POST['jobCategory'] ?? '';
-    $jobType = $_POST['jobType'] ?? '';
-    $experienceLevel = $_POST['experienceLevel'] ?? '';
+    $jobTitle = trim($_POST['jobTitle'] ?? '');
+    $companyName = trim($_POST['companyName'] ?? '');
+    $location = trim($_POST['location'] ?? '');
+    $jobDescription = trim($_POST['jobDescription'] ?? '');
     $salaryMin = $_POST['salaryMin'] ?? '';
     $salaryMax = $_POST['salaryMax'] ?? '';
-    $requiredSkills = $_POST['requiredSkills'] ?? '';
-    $preferredSkills = $_POST['preferredSkills'] ?? '';
-    $jobDescription = $_POST['jobDescription'] ?? '';
-    $companyDescription = $_POST['companyDescription'] ?? '';
-    $companyWebsite = $_POST['companyWebsite'] ?? '';
-    $contactEmail = $_POST['contactEmail'] ?? '';
-    
-    // Benefits checkboxes
-    $benefits = [];
-    $benefitFields = ['healthInsurance', 'dentalInsurance', 'visionInsurance', 'retirementPlan', 
-                     'paidTimeOff', 'flexibleSchedule', 'remoteWork', 'professionalDevelopment'];
-    foreach ($benefitFields as $benefit) {
-        if (isset($_POST[$benefit])) {
-            $benefits[] = $benefit;
-        }
-    }
-    
-    // Basic validation
-    $requiredFields = ['jobTitle', 'companyName', 'location', 'jobCategory', 'jobType', 
-                      'experienceLevel', 'salaryMin', 'salaryMax', 'requiredSkills', 
-                      'jobDescription', 'contactEmail'];
-    
-    foreach ($requiredFields as $field) {
-        if (empty($_POST[$field])) {
-            $_SESSION['job_error'] = 'Please fill in all required fields';
-            header("Location: post-job.php");
-            exit();
-        }
-    }
-    
-    if (!filter_var($contactEmail, FILTER_VALIDATE_EMAIL)) {
-        $_SESSION['job_error'] = 'Please enter a valid contact email address';
+    $requiredSkills = trim($_POST['requiredSkills'] ?? '');
+    $preferredSkills = trim($_POST['preferredSkills'] ?? '');
+
+    // Basic validation (use only fields that map to DB now)
+    if ($jobTitle === '' || $companyName === '' || $location === '' || $jobDescription === '') {
+        $_SESSION['job_error'] = 'Please fill in all required fields';
         header("Location: post-job.php");
         exit();
     }
-    
-    // Store job data in session for demo purposes
-    $jobData = [
-        'id' => uniqid(),
-        'title' => $jobTitle,
-        'company' => $companyName,
-        'location' => $location,
-        'category' => $jobCategory,
-        'type' => $jobType,
-        'experience_level' => $experienceLevel,
-        'salary_min' => $salaryMin,
-        'salary_max' => $salaryMax,
-        'required_skills' => $requiredSkills,
-        'preferred_skills' => $preferredSkills,
-        'description' => $jobDescription,
-        'company_description' => $companyDescription,
-        'company_website' => $companyWebsite,
-        'contact_email' => $contactEmail,
-        'benefits' => $benefits,
-        'posted_by' => $_SESSION['email'],
-        'posted_date' => date('Y-m-d H:i:s'),
-        'status' => 'active'
-    ];
-    
-    // Initialize jobs array if not exists
-    if (!isset($_SESSION['jobs'])) {
-        $_SESSION['jobs'] = [];
+
+    // Choose a salary value to store (simple approach): use max if set, else min; else NULL
+    $salaryNumeric = null;
+    if ($salaryMax !== '') {
+        $salaryNumeric = (float)$salaryMax;
+    } elseif ($salaryMin !== '') {
+        $salaryNumeric = (float)$salaryMin;
     }
-    
-    // Add job to session
-    $_SESSION['jobs'][] = $jobData;
-    
-    // Store in COOKIES for demo (valid 1 hour)
-    setcookie("last_job_title", $jobTitle, time() + 3600, "/");
-    setcookie("last_company", $companyName, time() + 3600, "/");
-    
-    // Clear error messages
+
+    $postedBy = $_SESSION['user_id'] ?? null;
+    if (!$postedBy) {
+        $_SESSION['job_error'] = 'Unable to identify employer account.';
+        header("Location: post-job.php");
+        exit();
+    }
+
+    // Prevent duplicates for same employer posting same company + title (case-insensitive)
+    $dupSql = 'SELECT id FROM jobs WHERE posted_by = ? AND LOWER(company_name) = LOWER(?) AND LOWER(title) = LOWER(?) LIMIT 1';
+    $dupStmt = $conn->prepare($dupSql);
+    if ($dupStmt) {
+        $dupStmt->bind_param('iss', $postedBy, $companyName, $jobTitle);
+        if ($dupStmt->execute()) {
+            $dupStmt->store_result();
+            if ($dupStmt->num_rows > 0) {
+                $_SESSION['job_error'] = 'You already posted this job title for this company. Please choose a different title.';
+                header('Location: post-job.php');
+                exit();
+            }
+        }
+        $dupStmt->close();
+    }
+
+    // Insert into jobs table (handle nullable salary)
+    if ($salaryNumeric === null) {
+        $sql = 'INSERT INTO jobs (title, description, company_name, location, salary, required_skills, preferred_skills, posted_by) VALUES (?,?,?,?,NULL,?,?,?)';
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) {
+            $_SESSION['job_error'] = 'Failed to prepare statement: ' . $conn->error;
+            header("Location: post-job.php");
+            exit();
+        }
+        $stmt->bind_param('ssssssi', $jobTitle, $jobDescription, $companyName, $location, $requiredSkills, $preferredSkills, $postedBy);
+    } else {
+        $sql = 'INSERT INTO jobs (title, description, company_name, location, salary, required_skills, preferred_skills, posted_by) VALUES (?,?,?,?,?,?,?,?)';
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) {
+            $_SESSION['job_error'] = 'Failed to prepare statement: ' . $conn->error;
+            header("Location: post-job.php");
+            exit();
+        }
+        $stmt->bind_param('ssssdssi', $jobTitle, $jobDescription, $companyName, $location, $salaryNumeric, $requiredSkills, $preferredSkills, $postedBy);
+    }
+
+    if (!$stmt->execute()) {
+        // Handle duplicate key from DB unique constraint
+        if (strpos($stmt->error, 'unique_postedby_company_title') !== false || $stmt->errno === 1062) {
+            $_SESSION['job_error'] = 'A job with this title already exists for this company under your account.';
+        } else {
+            $_SESSION['job_error'] = 'Failed to post job: ' . $stmt->error;
+        }
+        header("Location: post-job.php");
+        exit();
+    }
+
     unset($_SESSION['job_error']);
     $_SESSION['job_success'] = 'Job posted successfully!';
-    
-    // Redirect to dashboard
+
     header("Location: dashboard.php");
     exit();
 } else {

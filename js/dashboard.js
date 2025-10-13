@@ -184,13 +184,14 @@ function loadJobSeekerData() {
 }
 
 function loadEmployerData() {
-    // Load posted jobs from localStorage
+    // If PHP already rendered the table, don't overwrite it.
+    const serverRendered = document.querySelector('#jobsTable[data-server-rendered="true"]');
+    if (serverRendered) {
+        return;
+    }
+    // Fallback: use localStorage demo data only if nothing rendered by server
     const postedJobs = JSON.parse(localStorage.getItem('postedJobs') || '[]');
-    
-    // Update stats
     updateEmployerStats(postedJobs);
-    
-    // Update jobs table
     updateJobsTable(postedJobs);
 }
 
