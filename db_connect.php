@@ -226,4 +226,9 @@ $conn->query("CREATE INDEX IF NOT EXISTS idx_contact_email ON contact_submission
 
 ?>
 
-
+<?php
+// For debugging purposes only - remove or comment out in production
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+// echo "Database and tables ensured successfully.";
+?>
