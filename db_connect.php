@@ -112,6 +112,53 @@ if (!$conn->query($createJobsSql)) {
 // Optional: index to speed up lookups by title and location
 $conn->query("CREATE INDEX IF NOT EXISTS idx_jobs_title_location ON jobs(title, location)");
 
+// Ensure uniqueness per employer, company, and title (posted_by, company_name, title)
+// 1) Drop older narrower index if present
+$oldUnique = $conn->query("SHOW INDEX FROM jobs WHERE Key_name = 'unique_postedby_title'");
+if ($oldUnique && $oldUnique->num_rows > 0) {
+	$conn->query("ALTER TABLE jobs DROP INDEX unique_postedby_title");
+}
+
+// 2) Create the new, stricter unique constraint
+$haveUniquePct = $conn->query("SHOW INDEX FROM jobs WHERE Key_name = 'unique_postedby_company_title'");
+if (!$haveUniquePct || $haveUniquePct->num_rows === 0) {
+	try {
+		$conn->query("ALTER TABLE jobs ADD CONSTRAINT unique_postedby_company_title UNIQUE (posted_by, company_name, title)");
+	} catch (mysqli_sql_exception $e) {
+		if ((int)$e->getCode() !== 1062) {
+			throw $e;
+		}
+		// Duplicate data exists; ensure a non-unique index for performance instead
+		$conn->query("CREATE INDEX IF NOT EXISTS idx_jobs_postedby_company_title ON jobs(posted_by, company_name, title)");
+	}
+}
+
+// Ensure created_at and updated_at columns exist on older DBs
+$jobsColCreated = $conn->query("SHOW COLUMNS FROM jobs LIKE 'created_at'");
+if ($jobsColCreated && $jobsColCreated->num_rows === 0) {
+    $conn->query("ALTER TABLE jobs ADD COLUMN created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER posted_by");
+}
+$jobsColUpdated = $conn->query("SHOW COLUMNS FROM jobs LIKE 'updated_at'");
+if ($jobsColUpdated && $jobsColUpdated->num_rows === 0) {
+    $conn->query("ALTER TABLE jobs ADD COLUMN updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER created_at");
+}
+
+// Ensure salary column exists on older DBs
+$jobsColSalary = $conn->query("SHOW COLUMNS FROM jobs LIKE 'salary'");
+if ($jobsColSalary && $jobsColSalary->num_rows === 0) {
+    $conn->query("ALTER TABLE jobs ADD COLUMN salary DECIMAL(10,2) NULL AFTER location");
+}
+
+// Ensure skills columns exist for jobs
+$jobsColReqSkills = $conn->query("SHOW COLUMNS FROM jobs LIKE 'required_skills'");
+if ($jobsColReqSkills && $jobsColReqSkills->num_rows === 0) {
+    $conn->query("ALTER TABLE jobs ADD COLUMN required_skills VARCHAR(1000) NULL AFTER salary");
+}
+$jobsColPrefSkills = $conn->query("SHOW COLUMNS FROM jobs LIKE 'preferred_skills'");
+if ($jobsColPrefSkills && $jobsColPrefSkills->num_rows === 0) {
+    $conn->query("ALTER TABLE jobs ADD COLUMN preferred_skills VARCHAR(1000) NULL AFTER required_skills");
+}
+
 
 // 6) Create applications table
 $createApplicationsSql = "

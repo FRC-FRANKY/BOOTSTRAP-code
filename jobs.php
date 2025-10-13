@@ -5,9 +5,115 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Include authentication check
 require_once 'check_auth.php';
+require_once __DIR__ . '/db_connect.php';
 
 // Require authentication to view this page
 requireAuth();
+
+// Fetch latest jobs for listing
+$jobs = [];
+$result = $conn->query("SELECT id, title, description, company_name, location, salary, required_skills, preferred_skills, created_at FROM jobs ORDER BY created_at DESC");
+if ($result) {
+  while ($row = $result->fetch_assoc()) {
+    $jobs[] = $row;
+  }
+}
+
+// Simple skills extraction based on keywords found in title/description
+function extractSkillsFromJob(array $job): array {
+  $text = strtolower(($job['title'] ?? '') . ' ' . ($job['description'] ?? ''));
+  $skillKeywords = [
+    'javascript' => 'JavaScript',
+    'typescript' => 'TypeScript',
+    'react' => 'React',
+    'node' => 'Node.js',
+    'vue' => 'Vue',
+    'angular' => 'Angular',
+    'php' => 'PHP',
+    'laravel' => 'Laravel',
+    'symfony' => 'Symfony',
+    'python' => 'Python',
+    'django' => 'Django',
+    'flask' => 'Flask',
+    'java' => 'Java',
+    'spring' => 'Spring',
+    'kotlin' => 'Kotlin',
+    'swift' => 'Swift',
+    'go ' => 'Go',
+    'golang' => 'Go',
+    'c#' => 'C#',
+    '.net' => '.NET',
+    'sql' => 'SQL',
+    'mysql' => 'MySQL',
+    'postgres' => 'PostgreSQL',
+    'mongodb' => 'MongoDB',
+    'aws' => 'AWS',
+    'azure' => 'Azure',
+    'gcp' => 'GCP',
+    'docker' => 'Docker',
+    'kubernetes' => 'Kubernetes',
+    'html' => 'HTML',
+    'css' => 'CSS',
+    'ui' => 'UI Design',
+    'ux' => 'UX',
+    'figma' => 'Figma',
+  ];
+
+  $found = [];
+  foreach ($skillKeywords as $needle => $label) {
+    if (strpos($text, $needle) !== false) {
+      $found[$label] = true;
+    }
+  }
+
+  if (empty($found)) {
+    // Fallback based on role keywords in title
+    $fallbacks = [];
+    if (strpos($text, 'frontend') !== false) {
+      $fallbacks = ['JavaScript', 'React', 'HTML', 'CSS', 'Git'];
+    } elseif (strpos($text, 'backend') !== false) {
+      $fallbacks = ['Node.js', 'PHP', 'SQL', 'REST', 'Docker'];
+    } elseif (strpos($text, 'full stack') !== false || strpos($text, 'full-stack') !== false) {
+      $fallbacks = ['JavaScript', 'React', 'Node.js', 'SQL', 'Docker'];
+    } elseif (strpos($text, 'python') !== false) {
+      $fallbacks = ['Python', 'Django', 'Flask', 'SQL'];
+    } elseif (strpos($text, 'java') !== false) {
+      $fallbacks = ['Java', 'Spring', 'SQL', 'REST'];
+    } elseif (strpos($text, 'php') !== false) {
+      $fallbacks = ['PHP', 'Laravel', 'MySQL', 'REST'];
+    } elseif (strpos($text, 'designer') !== false || strpos($text, 'design') !== false || strpos($text, 'graphic') !== false || strpos($text, 'ui') !== false || strpos($text, 'ux') !== false) {
+      $fallbacks = ['UI Design', 'UX', 'Figma', 'Photoshop', 'Illustrator'];
+    } else {
+      // Generic defaults when nothing matches
+      $fallbacks = ['Communication', 'Teamwork', 'Problem Solving'];
+    }
+    foreach ($fallbacks as $label) {
+      $found[$label] = true;
+    }
+  }
+
+  // Return up to 6 skills
+  return array_slice(array_keys($found), 0, 6);
+}
+
+function getSkillsForDisplay(array $job): array {
+  // Prefer explicit skills saved with the job
+  $skillsCsv = $job['required_skills'] ?? '';
+  if (is_string($skillsCsv) && trim($skillsCsv) !== '') {
+    $raw = array_slice(array_map('trim', explode(',', $skillsCsv)), 0, 8);
+    $dedup = [];
+    foreach ($raw as $s) {
+      if ($s !== '') {
+        $dedup[strtolower($s)] = $s;
+      }
+    }
+    if (!empty($dedup)) {
+      return array_slice(array_values($dedup), 0, 6);
+    }
+  }
+  // Fallback to keyword-based extraction
+  return extractSkillsFromJob($job);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -18,116 +124,8 @@ requireAuth();
   <link rel="icon" type="image/svg+xml" href="Images/log.png" />
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Font Awesome -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <link href="css/home.css" rel="stylesheet">
   <link href="css/jobs.css" rel="stylesheet">
-  <style>
-    .input-group .input-group-text {
-      border-right: none;
-      border-radius: 0.375rem 0 0 0.375rem !important;
-    }
-    .input-group .form-control {
-      border-left: none;
-      border-right: none;
-      border-radius: 0 !important;
-    }
-    .input-group .btn {
-      border-left: none;
-      border-radius: 0 0.375rem 0.375rem 0 !important;
-    }
-    .input-group .form-control:focus {
-      border-left: none;
-      border-right: none;
-      box-shadow: none;
-      border-color: #86b7fe;
-    }
-    .input-group:focus-within .input-group-text {
-      border-color: #86b7fe;
-    }
-    .input-group:focus-within .btn {
-      border-color: #86b7fe;
-    }
-    .input-group {
-      border-radius: 0.375rem;
-    }
-    .salary-dropdown {
-      transition: all 0.3s ease;
-    }
-    .btn-warning {
-      background-color: #ffc107;
-      border-color: #ffc107;
-      color: #000;
-    }
-    .btn-warning:hover {
-      background-color: #e0a800;
-      border-color: #d39e00;
-      color: #000;
-    }
-    /* Hide number input spinners */
-    input[type="number"]::-webkit-outer-spin-button,
-    input[type="number"]::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-    input[type="number"] {
-      -moz-appearance: textfield;
-    }
-    /* Remove any processing indicators */
-    .processing {
-      display: none !important;
-    }
-    /* Salary dropdown styling to match image */
-    .salary-menu {
-      border-radius: 6px !important;
-      padding: 0 !important;
-      margin-top: 2px !important;
-      z-index: 2000; /* ensure visible above elements */
-      width: auto !important; /* allow to grow to fit content */
-      min-width: 280px;       /* readable width for long prices */
-      max-height: 240px;      /* enable vertical scrolling when long */
-      overflow-y: auto;
-      overflow-x: hidden;     /* never scroll horizontally */
-    }
-    /* Smooth scrolling feel */
-    .salary-menu::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    .salary-menu::-webkit-scrollbar-thumb {
-      background-color: rgba(0,0,0,0.2);
-      border-radius: 4px;
-    }
-    .salary-menu::-webkit-scrollbar-track {
-      background-color: transparent;
-    }
-    .salary-menu .dropdown-item {
-      border: none !important;
-      transition: background-color 0.2s ease;
-    }
-    .salary-menu .dropdown-item:hover {
-      background-color: #FFF0C8 !important;
-      color: #000 !important;
-    }
-    .salary-menu .dropdown-item:focus {
-      background-color: #FFF0C8 !important;
-      color: #000 !important;
-      outline: none !important;
-    }
-    .salary-menu .dropdown-header {
-      font-size: 0.875rem !important;
-      text-transform: none !important;
-      letter-spacing: normal !important;
-    }
-    .input-group .btn {
-      background-color: #f8f9fa !important;
-      border-color: #dee2e6 !important;
-    }
-    .input-group .btn:hover {
-      background-color: #e9ecef !important;
-      border-color: #dee2e6 !important;
-    }
-  </style>
 </head>
 <body data-user-role="<?php echo htmlspecialchars($_SESSION['role'] ?? 'job_seeker'); ?>">
 
@@ -343,7 +341,7 @@ requireAuth();
         <!-- Job Results -->
         <div class="col-12 col-lg-9">
           <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4>Job Results (<span id="jobCount">5</span>)</h4>
+            <h4>Job Results (<span id="jobCount"><?php echo count($jobs); ?></span>)</h4>
             <select class="form-select w-auto" id="sortBy">
               <option value="relevance">Sort by Relevance</option>
               <option value="date">Sort by Date</option>
@@ -353,127 +351,35 @@ requireAuth();
 
           <!-- Job Cards -->
           <div id="jobListings">
-            <!-- Job Card 1 -->
-            <div class="card shadow-sm mb-3 job-card" data-skills="javascript,react,node.js" data-experience="mid" data-salary="85000-120000" data-salary-max="120000" data-type="full-time" data-category="technology" data-date="2">
-              <div class="card-body">
-                <div class="row">
-                  <div class="col-12 col-md-8">
-                    <h5 class="card-title">Senior Frontend Developer</h5>
-                    <p class="text-muted mb-2">TechCorp Inc. • New York, NY</p>
-                    <div class="mb-2">
-                      <span class="badge bg-primary me-1">JavaScript</span>
-                      <span class="badge bg-primary me-1">React</span>
-                      <span class="badge bg-primary me-1">Node.js</span>
-                      <span class="badge bg-success me-1">95% Match</span>
+            <?php if (empty($jobs)): ?>
+              <div class="alert alert-secondary">No jobs posted yet.</div>
+            <?php else: ?>
+              <?php foreach ($jobs as $job): ?>
+              <div class="card shadow-sm mb-3 job-card" data-salary="<?php echo $job['salary'] !== null ? (int)$job['salary'] : 0; ?>" data-salary-max="<?php echo $job['salary'] !== null ? (int)$job['salary'] : 0; ?>">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-12 col-md-8">
+                      <h5 class="card-title"><?php echo htmlspecialchars($job['title']); ?></h5>
+                      <p class="text-muted mb-2"><?php echo htmlspecialchars($job['company_name']); ?> • <?php echo htmlspecialchars($job['location']); ?></p>
+                      <div class="mb-2">
+                        <?php foreach (getSkillsForDisplay($job) as $skill): ?>
+                          <span class="badge bg-primary me-1"><?php echo htmlspecialchars($skill); ?></span>
+                        <?php endforeach; ?>
+                      </div>
+                      <p class="mb-2"><?php echo htmlspecialchars(mb_strimwidth($job['description'] ?? '', 0, 160, '...')); ?></p>
+                      <p class="card-text">Posted on <?php echo date('Y-m-d', strtotime($job['created_at'])); ?></p>
                     </div>
-                    <p class="card-text">We're looking for a talented frontend developer to join our growing team. Experience with modern JavaScript frameworks required.</p>
-                  </div>
-                  <div class="col-12 col-md-4 text-md-end">
-                    <p class="text-success fw-bold mb-2">$85,000 - $120,000</p>
-                    <p class="text-muted small mb-2">Posted 2 days ago</p>
-                    <button class="btn btn-primary btn-sm">Apply Now</button>
+                    <div class="col-12 col-md-4 text-md-end">
+                      <p class="text-success fw-bold mb-2">
+                        <?php echo $job['salary'] !== null ? '$' . number_format((float)$job['salary'], 2) : 'Salary not specified'; ?>
+                      </p>
+                      <a class="btn btn-primary btn-sm" href="#">Apply Now</a>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-
-            <!-- Job Card 2 -->
-            <div class="card shadow-sm mb-3 job-card" data-skills="python,django,sql" data-experience="entry" data-salary="50000-70000" data-salary-max="70000" data-type="full-time" data-category="technology" data-date="7">
-              <div class="card-body">
-                <div class="row">
-                  <div class="col-12 col-md-8">
-                    <h5 class="card-title">Python Developer</h5>
-                    <p class="text-muted mb-2">StartupXYZ • San Francisco, CA</p>
-                    <div class="mb-2">
-                      <span class="badge bg-primary me-1">Python</span>
-                      <span class="badge bg-primary me-1">Django</span>
-                      <span class="badge bg-primary me-1">SQL</span>
-                      <span class="badge bg-warning me-1">75% Match</span>
-                    </div>
-                    <p class="card-text">Join our dynamic startup team! Looking for a Python developer with Django experience and strong problem-solving skills.</p>
-                  </div>
-                  <div class="col-12 col-md-4 text-md-end">
-                    <p class="text-success fw-bold mb-2">$50,000 - $70,000</p>
-                    <p class="text-muted small mb-2">Posted 1 week ago</p>
-                    <button class="btn btn-primary btn-sm">Apply Now</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Job Card 3 -->
-            <div class="card shadow-sm mb-3 job-card" data-skills="ui,ux,figma" data-experience="mid" data-salary="70000-95000" data-salary-max="95000" data-type="remote" data-category="design" data-date="3">
-              <div class="card-body">
-                <div class="row">
-                  <div class="col-12 col-md-8">
-                    <h5 class="card-title">UI/UX Designer</h5>
-                    <p class="text-muted mb-2">DesignStudio • Remote</p>
-                    <div class="mb-2">
-                      <span class="badge bg-primary me-1">UI Design</span>
-                      <span class="badge bg-primary me-1">UX Design</span>
-                      <span class="badge bg-primary me-1">Figma</span>
-                      <span class="badge bg-info me-1">85% Match</span>
-                    </div>
-                    <p class="card-text">Remote opportunity for a creative UI/UX designer. Must have experience with Figma and user-centered design principles.</p>
-                  </div>
-                  <div class="col-12 col-md-4 text-md-end">
-                    <p class="text-success fw-bold mb-2">$70,000 - $95,000</p>
-                    <p class="text-muted small mb-2">Posted 3 days ago</p>
-                    <button class="btn btn-primary btn-sm">Apply Now</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Job Card 4 - High Salary -->
-            <div class="card shadow-sm mb-3 job-card" data-skills="machine learning,ai,python,tensorflow" data-experience="senior" data-salary="150000-200000" data-salary-max="200000" data-type="full-time" data-category="technology" data-date="1">
-              <div class="card-body">
-                <div class="row">
-                  <div class="col-12 col-md-8">
-                    <h5 class="card-title">Senior AI/ML Engineer</h5>
-                    <p class="text-muted mb-2">TechGiant Corp. • Seattle, WA</p>
-                    <div class="mb-2">
-                      <span class="badge bg-primary me-1">Machine Learning</span>
-                      <span class="badge bg-primary me-1">AI</span>
-                      <span class="badge bg-primary me-1">Python</span>
-                      <span class="badge bg-primary me-1">TensorFlow</span>
-                      <span class="badge bg-success me-1">98% Match</span>
-                    </div>
-                    <p class="card-text">Lead our AI initiatives and develop cutting-edge machine learning solutions. PhD preferred with 5+ years experience in AI/ML.</p>
-                  </div>
-                  <div class="col-12 col-md-4 text-md-end">
-                    <p class="text-success fw-bold mb-2">$150,000 - $200,000</p>
-                    <p class="text-muted small mb-2">Posted 1 day ago</p>
-                    <button class="btn btn-primary btn-sm">Apply Now</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Job Card 5 - Very High Salary -->
-            <div class="card shadow-sm mb-3 job-card" data-skills="blockchain,ethereum,solidity,web3" data-experience="senior" data-salary="180000-250000" data-salary-max="250000" data-type="full-time" data-category="technology" data-date="4">
-              <div class="card-body">
-                <div class="row">
-                  <div class="col-12 col-md-8">
-                    <h5 class="card-title">Blockchain Solutions Architect</h5>
-                    <p class="text-muted mb-2">CryptoInnovation Ltd. • New York, NY</p>
-                    <div class="mb-2">
-                      <span class="badge bg-primary me-1">Blockchain</span>
-                      <span class="badge bg-primary me-1">Ethereum</span>
-                      <span class="badge bg-primary me-1">Solidity</span>
-                      <span class="badge bg-primary me-1">Web3</span>
-                      <span class="badge bg-success me-1">92% Match</span>
-                    </div>
-                    <p class="card-text">Architect and implement blockchain solutions for enterprise clients. Deep understanding of DeFi protocols and smart contracts required.</p>
-                  </div>
-                  <div class="col-12 col-md-4 text-md-end">
-                    <p class="text-success fw-bold mb-2">$180,000 - $250,000</p>
-                    <p class="text-muted small mb-2">Posted 4 days ago</p>
-                    <button class="btn btn-primary btn-sm">Apply Now</button>
-                  </div>
-                </div>
-              </div>
-            </div>
+              <?php endforeach; ?>
+            <?php endif; ?>
           </div>
 
           <!-- Pagination -->

@@ -3,9 +3,37 @@ session_start();
 
 // Include authentication check
 require_once 'check_auth.php';
+require_once __DIR__ . '/db_connect.php';
 
 // Require authentication to view this page
 requireAuth();
+
+// Prepare jobs for dashboards
+$currentUserId = $_SESSION['user_id'] ?? null;
+
+// Employer: jobs posted by current user
+$employerJobs = [];
+if ($currentUserId) {
+  $stmt = $conn->prepare('SELECT id, title, company_name, location, IFNULL(created_at, NOW()) AS created_at FROM jobs WHERE posted_by = ? ORDER BY created_at DESC');
+  if ($stmt) {
+    $stmt->bind_param('i', $currentUserId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+      $employerJobs[] = $row;
+    }
+    $stmt->close();
+  }
+}
+
+// Job Seeker: latest jobs (limit 10)
+$latestJobs = [];
+$result = $conn->query('SELECT id, title, company_name, location, IFNULL(created_at, NOW()) AS created_at FROM jobs ORDER BY created_at DESC LIMIT 10');
+if ($result) {
+  while ($row = $result->fetch_assoc()) {
+    $latestJobs[] = $row;
+  }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -304,33 +332,38 @@ requireAuth();
                     <thead>
                       <tr>
                         <th>Job Title</th>
-                        <th>Status</th>
-                        <th>Applicants</th>
+                        <th>Company</th>
                         <th>Posted Date</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
-                    <tbody id="jobsTable">
-                      <tr>
-                        <td>Senior Frontend Developer</td>
-                        <td><span class="badge bg-success">Active</span></td>
-                        <td>8</td>
-                        <td>2024-01-10</td>
-                        <td>
-                          <button class="btn btn-sm btn-outline-primary me-1">View</button>
-                          <button class="btn btn-sm btn-outline-secondary">Edit</button>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Python Developer</td>
-                        <td><span class="badge bg-success">Active</span></td>
-                        <td>12</td>
-                        <td>2024-01-08</td>
-                        <td>
-                          <button class="btn btn-sm btn-outline-primary me-1">View</button>
-                          <button class="btn btn-sm btn-outline-secondary">Edit</button>
-                        </td>
-                      </tr>
+                    <tbody id="jobsTable" data-server-rendered="true">
+                      <?php if (count($employerJobs) > 0) : ?>
+                        <?php foreach ($employerJobs as $job): ?>
+                          <tr>
+                            <td><?php echo htmlspecialchars($job['title']); ?></td>
+                            <td><?php echo htmlspecialchars($job['company_name']); ?></td>
+                            <td><?php echo htmlspecialchars(date('Y-m-d', strtotime($job['created_at']))); ?></td>
+                            <td>
+                              <a href="jobs.php" class="btn btn-sm btn-outline-primary me-1">View</a>
+                              <a href="#" class="btn btn-sm btn-outline-secondary disabled">Edit</a>
+                            </td>
+                          </tr>
+                        <?php endforeach; ?>
+                      <?php elseif (count($latestJobs) > 0) : ?>
+                        <?php foreach ($latestJobs as $job): ?>
+                          <tr>
+                            <td><?php echo htmlspecialchars($job['title']); ?></td>
+                            <td><?php echo htmlspecialchars($job['company_name']); ?></td>
+                            <td><?php echo htmlspecialchars(date('Y-m-d', strtotime($job['created_at']))); ?></td>
+                            <td>
+                              <a href="jobs.php" class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
+                          </tr>
+                        <?php endforeach; ?>
+                      <?php else: ?>
+                        <tr><td colspan="4" class="text-muted">No jobs posted yet.</td></tr>
+                      <?php endif; ?>
                     </tbody>
                   </table>
                 </div>

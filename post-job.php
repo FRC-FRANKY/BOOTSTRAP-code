@@ -86,6 +86,20 @@ requireAuth();
           <!-- Job Posting Form -->
           <div class="card shadow-lg">
             <div class="card-body p-5">
+              <?php if (!empty($_SESSION['job_error'])): ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                  <?php echo htmlspecialchars($_SESSION['job_error']); ?>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <?php unset($_SESSION['job_error']); ?>
+              <?php endif; ?>
+              <?php if (!empty($_SESSION['job_success'])): ?>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                  <?php echo htmlspecialchars($_SESSION['job_success']); ?>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <?php unset($_SESSION['job_success']); ?>
+              <?php endif; ?>
               <form id="jobPostForm" class="needs-validation" novalidate action="process_job.php" method="post">
                 
                 <!-- Basic Information -->
@@ -96,7 +110,7 @@ requireAuth();
                   
                   <div class="col-12 col-md-6 mb-3">
                     <label for="jobTitle" class="form-label">Job Title *</label>
-                    <input type="text" class="form-control" id="jobTitle" required>
+                    <input type="text" class="form-control" id="jobTitle" name="jobTitle" required>
                     <div class="invalid-feedback">
                       Please provide a job title.
                     </div>
@@ -104,7 +118,7 @@ requireAuth();
                   
                   <div class="col-12 col-md-6 mb-3">
                     <label for="companyName" class="form-label">Company Name *</label>
-                    <input type="text" class="form-control" id="companyName" required>
+                    <input type="text" class="form-control" id="companyName" name="companyName" required>
                     <div class="invalid-feedback">
                       Please provide your company name.
                     </div>
@@ -112,7 +126,7 @@ requireAuth();
                   
                   <div class="col-12 col-md-6 mb-3">
                     <label for="location" class="form-label">Location *</label>
-                    <input type="text" class="form-control" id="location" placeholder="City, State or Remote" required>
+                    <input type="text" class="form-control" id="location" name="location" placeholder="City, State or Remote" required>
                     <div class="invalid-feedback">
                       Please provide a location.
                     </div>
@@ -120,7 +134,7 @@ requireAuth();
                   
                   <div class="col-12 col-md-6 mb-3">
                     <label for="jobCategory" class="form-label">Job Category *</label>
-                    <select class="form-select" id="jobCategory" required>
+                    <select class="form-select" id="jobCategory" name="jobCategory" required>
                       <option value="">Select Category</option>
                       <option value="technology">Technology</option>
                       <option value="marketing">Marketing</option>
@@ -145,7 +159,7 @@ requireAuth();
                   
                   <div class="col-12 col-md-6 mb-3">
                     <label for="jobType" class="form-label">Job Type *</label>
-                    <select class="form-select" id="jobType" required>
+                    <select class="form-select" id="jobType" name="jobType" required>
                       <option value="">Select Job Type</option>
                       <option value="full-time">Full Time</option>
                       <option value="part-time">Part Time</option>
@@ -160,7 +174,7 @@ requireAuth();
                   
                   <div class="col-12 col-md-6 mb-3">
                     <label for="experienceLevel" class="form-label">Experience Level *</label>
-                    <select class="form-select" id="experienceLevel" required>
+                    <select class="form-select" id="experienceLevel" name="experienceLevel" required>
                       <option value="">Select Experience Level</option>
                       <option value="entry">Entry Level (0-2 years)</option>
                       <option value="mid">Mid Level (3-5 years)</option>
@@ -176,7 +190,7 @@ requireAuth();
                     <label for="salaryMin" class="form-label">Salary Range (Min) *</label>
                     <div class="input-group">
                       <span class="input-group-text">$</span>
-                      <input type="number" class="form-control" id="salaryMin" placeholder="50000" required>
+                      <input type="number" class="form-control" id="salaryMin" name="salaryMin" placeholder="50000" required>
                     </div>
                     <div class="invalid-feedback">
                       Please provide a minimum salary.
@@ -187,7 +201,7 @@ requireAuth();
                     <label for="salaryMax" class="form-label">Salary Range (Max) *</label>
                     <div class="input-group">
                       <span class="input-group-text">$</span>
-                      <input type="number" class="form-control" id="salaryMax" placeholder="80000" required>
+                      <input type="number" class="form-control" id="salaryMax" name="salaryMax" placeholder="80000" required>
                     </div>
                     <div class="invalid-feedback">
                       Please provide a maximum salary.
@@ -204,7 +218,7 @@ requireAuth();
                   
                   <div class="col-12 mb-3">
                     <label for="requiredSkills" class="form-label">Required Skills *</label>
-                    <input type="text" class="form-control" id="requiredSkills" placeholder="e.g., JavaScript, React, Node.js, SQL" required>
+                    <input type="text" class="form-control" id="requiredSkills" name="requiredSkills" placeholder="e.g., JavaScript, React, Node.js, SQL" required>
                     <div class="form-text">Separate skills with commas</div>
                     <div class="invalid-feedback">
                       Please provide required skills.
@@ -213,13 +227,13 @@ requireAuth();
                   
                   <div class="col-12 mb-3">
                     <label for="preferredSkills" class="form-label">Preferred Skills (Optional)</label>
-                    <input type="text" class="form-control" id="preferredSkills" placeholder="e.g., TypeScript, AWS, Docker">
+                    <input type="text" class="form-control" id="preferredSkills" name="preferredSkills" placeholder="e.g., TypeScript, AWS, Docker">
                     <div class="form-text">Additional skills that would be nice to have</div>
                   </div>
                   
                   <div class="col-12 mb-3">
                     <label for="jobDescription" class="form-label">Job Description *</label>
-                    <textarea class="form-control" id="jobDescription" rows="6" placeholder="Describe the role, responsibilities, and what you're looking for in a candidate..." required></textarea>
+                    <textarea class="form-control" id="jobDescription" name="jobDescription" rows="6" placeholder="Describe the role, responsibilities, and what you're looking for in a candidate..." required></textarea>
                     <div class="invalid-feedback">
                       Please provide a job description.
                     </div>
@@ -234,17 +248,17 @@ requireAuth();
                   
                   <div class="col-12 mb-3">
                     <label for="companyDescription" class="form-label">Company Description</label>
-                    <textarea class="form-control" id="companyDescription" rows="3" placeholder="Tell candidates about your company culture, mission, and what makes you unique..."></textarea>
+                    <textarea class="form-control" id="companyDescription" name="companyDescription" rows="3" placeholder="Tell candidates about your company culture, mission, and what makes you unique..."></textarea>
                   </div>
                   
                   <div class="col-12 col-md-6 mb-3">
                     <label for="companyWebsite" class="form-label">Company Website</label>
-                    <input type="url" class="form-control" id="companyWebsite" placeholder="https://www.yourcompany.com">
+                    <input type="url" class="form-control" id="companyWebsite" name="companyWebsite" placeholder="https://www.yourcompany.com">
                   </div>
                   
                   <div class="col-12 col-md-6 mb-3">
                     <label for="contactEmail" class="form-label">Contact Email *</label>
-                    <input type="email" class="form-control" id="contactEmail" required>
+                    <input type="email" class="form-control" id="contactEmail" name="contactEmail" required>
                     <div class="invalid-feedback">
                       Please provide a valid email address.
                     </div>
@@ -262,25 +276,25 @@ requireAuth();
                     <div class="row">
                       <div class="col-12 col-md-6">
                         <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="healthInsurance">
+                          <input class="form-check-input" type="checkbox" id="healthInsurance" name="healthInsurance">
                           <label class="form-check-label" for="healthInsurance">
                             Health Insurance
                           </label>
                         </div>
                         <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="dentalInsurance">
+                          <input class="form-check-input" type="checkbox" id="dentalInsurance" name="dentalInsurance">
                           <label class="form-check-label" for="dentalInsurance">
                             Dental Insurance
                           </label>
                         </div>
                         <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="visionInsurance">
+                          <input class="form-check-input" type="checkbox" id="visionInsurance" name="visionInsurance">
                           <label class="form-check-label" for="visionInsurance">
                             Vision Insurance
                           </label>
                         </div>
                         <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="retirementPlan">
+                          <input class="form-check-input" type="checkbox" id="retirementPlan" name="retirementPlan">
                           <label class="form-check-label" for="retirementPlan">
                             401(k) / Retirement Plan
                           </label>
@@ -288,25 +302,25 @@ requireAuth();
                       </div>
                       <div class="col-12 col-md-6">
                         <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="paidTimeOff">
+                          <input class="form-check-input" type="checkbox" id="paidTimeOff" name="paidTimeOff">
                           <label class="form-check-label" for="paidTimeOff">
                             Paid Time Off
                           </label>
                         </div>
                         <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="flexibleSchedule">
+                          <input class="form-check-input" type="checkbox" id="flexibleSchedule" name="flexibleSchedule">
                           <label class="form-check-label" for="flexibleSchedule">
                             Flexible Schedule
                           </label>
                         </div>
                         <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="remoteWork">
+                          <input class="form-check-input" type="checkbox" id="remoteWork" name="remoteWork">
                           <label class="form-check-label" for="remoteWork">
                             Remote Work Options
                           </label>
                         </div>
                         <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="professionalDevelopment">
+                          <input class="form-check-input" type="checkbox" id="professionalDevelopment" name="professionalDevelopment">
                           <label class="form-check-label" for="professionalDevelopment">
                             Professional Development
                           </label>
