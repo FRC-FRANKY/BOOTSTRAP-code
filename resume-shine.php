@@ -1,0 +1,65 @@
+<?php
+session_start();
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Resume - Shine Florence Padillo</title>
+  <link rel="icon" type="image/svg+xml" href="Images/log.png" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/home.css" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar navbar-light bg-light shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="about.php">← Back to About</a>
+    </div>
+  </nav>
+
+  <main class="py-5">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-12 col-lg-4 text-center">
+          <img src="Images/Shine Florence Padillo.jpg" alt="Shine Florence Padillo" class="rounded-circle mb-3" width="160" height="160">
+          <h2 class="fw-bold mb-1">Shine Florence Padillo</h2>
+          <p class="text-muted">Software Tester / Technical Writer</p>
+          <div class="d-grid gap-2">
+            <a class="btn btn-primary" href="#contact">Contact</a>
+          </div>
+        </div>
+        <div class="col-12 col-lg-8">
+          <h4 class="fw-bold">Summary</h4>
+          <p>Software Tester and Technical Writer with experience in QA processes and documentation.</p>
+
+          <h4 class="fw-bold mt-4">Experience</h4>
+          <ul>
+              <li>Designed a custome logo for clients based on their needs and preferences.</li>
+              <li>Delivered professional unique designs for small businesses, organizations, and personal brands.</li>
+              <li>Provided high quality printing services for promotional materials, business cards, and personalize items.</li>
+          </ul>
+
+          <h4 class="fw-bold mt-4">Skills</h4>
+          <span class="badge bg-secondary me-1 mb-1">Professional in C#</span>
+          <span class="badge bg-secondary me-1 mb-1">Java</span>
+          <span class="badge bg-secondary me-1 mb-1">Graphic Designing</span>
+          <span class="badge bg-secondary me-1 mb-1">SQL</span>
+
+          <h4 id="contact" class="fw-bold mt-4">Contact</h4>
+          <p class="mb-0">Email: shinepadi@gmail.com</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer py-4">
+    <div class="container d-flex justify-content-between align-items-center">
+      <p class="mb-0 text-muted">&copy; 2025 JobFilter</p>
+      <a href="about.php" class="text-decoration-none">Back to About</a>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

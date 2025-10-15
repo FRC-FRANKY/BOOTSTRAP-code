@@ -1,0 +1,165 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contact Us - JobFilter</title>
+  <link rel="icon" type="image/svg+xml" href="Images/log.png" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/home.css" rel="stylesheet">
+  <link href="css/contact.css" rel="stylesheet">
+</head>
+<body data-user-role="<?php echo htmlspecialchars($_SESSION['role'] ?? 'job_seeker'); ?>">
+
+ <!-- Navbar -->
+  <nav class="navbar navbar-light bg-light sticky-top shadow-sm navbar-glass">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="dashboard.php">JobFilter</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#navMenu" aria-controls="navMenu" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="offcanvas offcanvas-end" tabindex="-1" id="navMenu" aria-labelledby="navMenuLabel">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="navMenuLabel">Menu</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+        <div class="text-center mb-3">
+          <img id="offcanvasAvatar" src="Images/log.png" class="rounded-circle mb-2" width="72" height="72" alt="Avatar">
+          <h5 class="fw-bold mb-2" id="offcanvasName"><?php echo htmlspecialchars($_SESSION['name'] ?? 'Guest'); ?></h5>
+          <p class="text-muted small mb-2"><?php echo htmlspecialchars($_SESSION['email'] ?? ''); ?></p>
+          <p class="text-muted small mb-2">Role: <?php
+              $displayRole = $_SESSION['role'] ?? 'user';
+              if ($displayRole === 'job_seeker') {
+                  echo 'Job Seeker';
+              } elseif ($displayRole === 'employer') {
+                  echo 'Employer';
+              } elseif ($displayRole === 'admin') {
+                  echo 'Administrator';
+              } else {
+                  echo htmlspecialchars($displayRole);
+              }
+          ?></p>
+          <a href="process_logout.php" class="btn btn-outline-danger btn-sm">Logout</a>
+          <button type="button" class="btn btn-outline-secondary btn-sm" onclick="logout()">Logout</button>
+          <hr class="mt-3">
+        </div>
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0" id="navMenuList">
+          <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="jobs.php">Find Jobs</a></li>
+          <li class="nav-item"><a class="nav-link" href="post-job.php">Post Job</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.php">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
+        </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- Header -->
+  <section class="py-5 text-center bg-light">
+    <div class="container">
+      <h1 class="fw-bold mb-2">Get in Touch</h1>
+      <p class="text-muted mb-0">Questions, feedback, or partnership ideas? We'd love to hear from you.</p>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Contact Content -->
+    <section class="py-5">
+      <div class="container">
+        <div class="row g-4">
+          <!-- Contact Form -->
+          <div class="col-12 col-lg-7">
+            <div class="card shadow-sm h-100">
+              <div class="card-header"><h5 class="mb-0">Send us a message</h5></div>
+              <div class="card-body">
+                <div id="contactSuccess" class="alert alert-success d-none" role="alert">
+                  Thank you! Your message has been sent. We'll get back to you soon.
+                </div>
+                <form id="contactForm" class="needs-validation" novalidate action="process_contact.php" method="post">
+                  <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                      <label for="name" class="form-label">Full Name</label>
+                      <input type="text" class="form-control" id="name" placeholder="Your name" required />
+                      <div class="invalid-feedback">Please enter your name.</div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="email" class="form-label">Email</label>
+                      <input type="email" class="form-control" id="email" placeholder="you@example.com" required />
+                      <div class="invalid-feedback">Please enter a valid email.</div>
+                    </div>
+                    <div class="col-12">
+                      <label for="subject" class="form-label">Subject</label>
+                      <input type="text" class="form-control" id="subject" placeholder="Subject" required />
+                      <div class="invalid-feedback">Please add a subject.</div>
+                    </div>
+                    <div class="col-12">
+                      <label for="message" class="form-label">Message</label>
+                      <textarea class="form-control" id="message" rows="6" placeholder="How can we help?" required></textarea>
+                      <div class="invalid-feedback">Please enter a message.</div>
+                    </div>
+                    <div class="col-12 text-end">
+                      <button type="submit" class="btn btn-primary">Send Message</button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          <!-- Contact Info -->
+          <div class="col-12 col-lg-5">
+            <div class="card shadow-sm mb-4">
+              <div class="card-header"><h6 class="mb-0">Contact Information</h6></div>
+              <div class="card-body">
+                <p class="mb-2"><strong>Email:</strong> support@jobfilter.example</p>
+                <p class="mb-2"><strong>Phone:</strong> +1 (555) 123-4567</p>
+                <p class="mb-0"><strong>Address:</strong> 123 Market Street, Suite 200, Manila, Philippines</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+   <!-- Office Hours Section -->
+   <div class="col-12 col-lg-5">
+    <div class="card shadow-sm h-100">
+      <div class="card-header"><h6 class="mb-0">Office Hours</h6></div>
+      <div class="card-body">
+        <ul class="mb-0">
+          <li>Mon–Fri: 9:00 AM – 6:00 PM</li>
+          <li>Sat: 10:00 AM – 2:00 PM</li>
+          <li>Sun: Closed</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer with Office Hours -->
+    <!-- Footer -->
+    <footer class="footer py-4">
+      <div class="container d-flex flex-wrap justify-content-between align-items-center">
+        <p class="mb-0 text-muted">&copy; 2025 JobFilter. All rights reserved.</p>
+        <div class="d-flex flex-wrap gap-3">
+          <a href="#" class="text-decoration-none text-muted">Privacy</a>
+          <a href="#" class="text-decoration-none text-muted">Terms</a>
+          <a href="#" class="text-decoration-none text-muted">Support</a>
+        </div>
+      </div>
+    </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Authentication Service -->
+  <script src="js/common.js"></script>
+  <script src="js/role-control.js"></script>
+  
+  <script src="js/contact.js"></script>
+</body>
+</html>
