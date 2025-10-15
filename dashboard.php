@@ -4,12 +4,27 @@ session_start();
 // Include authentication check
 require_once 'check_auth.php';
 require_once __DIR__ . '/db_connect.php';
+require_once __DIR__ . '/skill_extractor.php';
 
 // Require authentication to view this page
 requireAuth();
 
 // Prepare jobs for dashboards
 $currentUserId = $_SESSION['user_id'] ?? null;
+
+// Get user skills for job seekers
+$userSkills = [];
+$userSkillsWithCategories = [];
+if ($currentUserId) {
+    // $currentUserId already contains the user ID from session
+    $skillExtractor = new SkillExtractor($conn);
+    $userSkills = $skillExtractor->getUserSkills($currentUserId, $conn);
+    
+    // Get skills with categories for enhanced display
+    $userSkillsWithCategories = $skillExtractor->extractSkillsWithCategories(
+        implode(' ', $userSkills)
+    );
+}
 
 // Employer: jobs posted by current user
 $employerJobs = [];
@@ -93,6 +108,9 @@ if ($result) {
           <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
           <?php if ($role === 'admin') : ?>
             <li class="nav-item"><a class="nav-link" href="user-management.php">Users</a></li>
+          <?php endif; ?>
+          <?php if ($role === 'employer' || $role === 'admin') : ?>
+            <li class="nav-item"><a class="nav-link" href="view_resume.php">View Resumes</a></li>
           <?php endif; ?>
           <li class="nav-item"><a class="nav-link" href="user-profile.php">Profile</a></li>
         </ul>
@@ -192,17 +210,46 @@ if ($result) {
               </div>
               <div class="card-body">
                 <div class="skills-container mb-3">
-                  <span class="badge bg-primary me-2 mb-2">JavaScript</span>
-                  <span class="badge bg-primary me-2 mb-2">React</span>
-                  <span class="badge bg-primary me-2 mb-2">Node.js</span>
-                  <span class="badge bg-primary me-2 mb-2">Python</span>
-                  <span class="badge bg-primary me-2 mb-2">SQL</span>
+                  <?php if (!empty($userSkillsWithCategories)): ?>
+                    <?php 
+                    // Group skills by category
+                    $skillsByCategory = [];
+                    foreach ($userSkillsWithCategories as $skill) {
+                        $category = $skill['category'];
+                        if (!isset($skillsByCategory[$category])) {
+                            $skillsByCategory[$category] = [];
+                        }
+                        $skillsByCategory[$category][] = $skill['name'];
+                    }
+                    ?>
+                    
+                    <?php foreach ($skillsByCategory as $category => $skills): ?>
+                      <div class="mb-2">
+                        <small class="text-muted fw-bold"><?php echo htmlspecialchars($category); ?>:</small><br>
+                        <?php foreach ($skills as $skill): ?>
+                          <span class="badge bg-primary me-1 mb-1"><?php echo htmlspecialchars($skill); ?></span>
+                        <?php endforeach; ?>
+                      </div>
+                    <?php endforeach; ?>
+                  <?php elseif (!empty($userSkills)): ?>
+                    <?php foreach ($userSkills as $skill): ?>
+                      <span class="badge bg-primary me-2 mb-2"><?php echo htmlspecialchars($skill); ?></span>
+                    <?php endforeach; ?>
+                  <?php else: ?>
+                    <span class="text-muted; text-color-white">No skills exracted. Add skills manually or upload a resume to automatically extract your skills!</span>
+                  <?php endif; ?>
                   <span class="badge bg-secondary me-2 mb-2">+ Add Skill</span>
                 </div>
                 <div class="progress mb-3">
-                  <div class="progress-bar" role="progressbar" style="width: 85%">Profile Complete: 85%</div>
+                  <?php 
+                    $skillCount = count($userSkills);
+                    $completionPercentage = min(100, ($skillCount * 10)); // 10% per skill, max 100%
+                  ?>
+                  <div class="progress-bar" role="progressbar" style="width: <?php echo $completionPercentage; ?>%">
+                    Profile Complete: <?php echo $completionPercentage; ?>%
+                  </div>
                 </div>
-                <button class="btn btn-outline-primary btn-sm">Update Skills</button>
+                <button class="btn btn-outline-primary btn-sm" onclick="showSkillUpdateModal()">Update Skills</button>
               </div>
             </div>
           </div>
@@ -375,6 +422,36 @@ if ($result) {
     </div>
   </section>
 
+  <!-- Skill Update Modal -->
+  <div class="modal fade" id="skillUpdateModal" tabindex="-1" aria-labelledby="skillUpdateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="skillUpdateModalLabel">Update Your Skills</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="skillUpdateForm" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label for="newResume" class="form-label">Upload New Resume</label>
+              <input type="file" class="form-control" id="newResume" name="resume" accept=".pdf,.docx,.doc,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+              <div class="form-text">Upload a new resume to automatically extract and update your skills.</div>
+            </div>
+            <div class="mb-3">
+              <label for="manualSkills" class="form-label">Or Add Skills Manually</label>
+              <input type="text" class="form-control" id="manualSkills" name="manualSkills" placeholder="e.g., JavaScript, React, Python">
+              <div class="form-text">Separate multiple skills with commas.</div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="updateSkills()">Update Skills</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer class="footer py-4">
     <div class="container d-flex flex-wrap justify-content-between align-items-center">
@@ -396,5 +473,76 @@ if ($result) {
   <script src="js/role-control.js"></script>
   
   <script src="js/dashboard.js"></script>
+  
+  <script>
+    // Skill update modal functions
+    function showSkillUpdateModal() {
+      const modal = new bootstrap.Modal(document.getElementById('skillUpdateModal'));
+      modal.show();
+    }
+    
+    function updateSkills() {
+      const form = document.getElementById('skillUpdateForm');
+      const formData = new FormData(form);
+      
+      // Show loading state
+      const updateBtn = document.querySelector('#skillUpdateModal .btn-primary');
+      const originalText = updateBtn.textContent;
+      updateBtn.textContent = 'Updating...';
+      updateBtn.disabled = true;
+      
+      fetch('process_skill_update.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Show success message
+          showNotification('Skills updated successfully!', 'success');
+          
+          // Close modal
+          const modal = bootstrap.Modal.getInstance(document.getElementById('skillUpdateModal'));
+          modal.hide();
+          
+          // Reload page to show updated skills
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        } else {
+          showNotification(data.message || 'Failed to update skills', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showNotification('An error occurred while updating skills', 'error');
+      })
+      .finally(() => {
+        // Reset button state
+        updateBtn.textContent = originalText;
+        updateBtn.disabled = false;
+      });
+    }
+    
+    function showNotification(message, type) {
+      // Create notification element
+      const notification = document.createElement('div');
+      notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+      notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+      notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.remove();
+        }
+      }, 5000);
+    }
+  </script>
 </body>
 </html>

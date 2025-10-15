@@ -230,40 +230,6 @@ function getSkillsForDisplay(array $job): array {
                     <button type="submit" class="btn btn-primary w-100">Search</button>
                   </div>
                 </div>
-                
-                <!-- Advanced Filters -->
-                <div class="row mt-3" id="advancedFilters" style="display: none;">
-                  <div class="col-12">
-                    <div class="row g-3">
-                      <div class="col-12 col-md-3">
-                        <select class="form-select" id="experience">
-                          <option value="">Experience Level</option>
-                          <option value="entry">Entry Level</option>
-                          <option value="mid">Mid Level</option>
-                          <option value="senior">Senior Level</option>
-                        </select>
-                      </div>
-                      <div class="col-12 col-md-3">
-                        <select class="form-select" id="jobType">
-                          <option value="">Job Type</option>
-                          <option value="full-time">Full Time</option>
-                          <option value="part-time">Part Time</option>
-                          <option value="contract">Contract</option>
-                          <option value="remote">Remote</option>
-                        </select>
-                      </div>
-                      <div class="col-12 col-md-3">
-                        <button type="button" class="btn btn-warning w-100 fw-bold" id="clearFilters">
-                          <i class="fas fa-eraser me-2"></i>Clear All Filters
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="text-center mt-3">
-                  <button type="button" class="btn btn-link" id="toggleFilters">Advanced Filters</button>
-                </div>
               </form>
             </div>
           </div>

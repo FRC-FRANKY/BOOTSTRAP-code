@@ -224,11 +224,26 @@ if (!$conn->query($createContactSql)) {
 // Optional: index to speed up lookups by email
 $conn->query("CREATE INDEX IF NOT EXISTS idx_contact_email ON contact_submissions(email)");
 
+// 8) Create user_skills table for storing extracted skills from resumes
+$createUserSkillsSql = "
+CREATE TABLE IF NOT EXISTS user_skills (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  skill_name VARCHAR(100) NOT NULL,
+  confidence_score DECIMAL(3,2) DEFAULT 1.00,
+  extracted_from VARCHAR(50) DEFAULT 'resume',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  UNIQUE KEY unique_user_skill (user_id, skill_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
+
+if (!$conn->query($createUserSkillsSql)) {
+    die('Failed to ensure user_skills table: ' . $conn->error);
+}
+
+// Optional: index to speed up lookups by user_id
+$conn->query("CREATE INDEX IF NOT EXISTS idx_user_skills_user_id ON user_skills(user_id)");
+
 ?>
 
-<?php
-// For debugging purposes only - remove or comment out in production
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-// echo "Database and tables ensured successfully.";
-?>
+
