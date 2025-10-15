@@ -14,10 +14,16 @@ $currentUserId = $_SESSION['user_id'] ?? null;
 
 // Get user skills for job seekers
 $userSkills = [];
+$userSkillsWithCategories = [];
 if ($currentUserId) {
     // $currentUserId already contains the user ID from session
-    $skillExtractor = new SkillExtractor();
+    $skillExtractor = new SkillExtractor($conn);
     $userSkills = $skillExtractor->getUserSkills($currentUserId, $conn);
+    
+    // Get skills with categories for enhanced display
+    $userSkillsWithCategories = $skillExtractor->extractSkillsWithCategories(
+        implode(' ', $userSkills)
+    );
 }
 
 // Employer: jobs posted by current user
@@ -102,6 +108,9 @@ if ($result) {
           <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
           <?php if ($role === 'admin') : ?>
             <li class="nav-item"><a class="nav-link" href="user-management.php">Users</a></li>
+          <?php endif; ?>
+          <?php if ($role === 'employer' || $role === 'admin') : ?>
+            <li class="nav-item"><a class="nav-link" href="view_resume.php">View Resumes</a></li>
           <?php endif; ?>
           <li class="nav-item"><a class="nav-link" href="user-profile.php">Profile</a></li>
         </ul>
@@ -201,12 +210,33 @@ if ($result) {
               </div>
               <div class="card-body">
                 <div class="skills-container mb-3">
-                  <?php if (!empty($userSkills)): ?>
+                  <?php if (!empty($userSkillsWithCategories)): ?>
+                    <?php 
+                    // Group skills by category
+                    $skillsByCategory = [];
+                    foreach ($userSkillsWithCategories as $skill) {
+                        $category = $skill['category'];
+                        if (!isset($skillsByCategory[$category])) {
+                            $skillsByCategory[$category] = [];
+                        }
+                        $skillsByCategory[$category][] = $skill['name'];
+                    }
+                    ?>
+                    
+                    <?php foreach ($skillsByCategory as $category => $skills): ?>
+                      <div class="mb-2">
+                        <small class="text-muted fw-bold"><?php echo htmlspecialchars($category); ?>:</small><br>
+                        <?php foreach ($skills as $skill): ?>
+                          <span class="badge bg-primary me-1 mb-1"><?php echo htmlspecialchars($skill); ?></span>
+                        <?php endforeach; ?>
+                      </div>
+                    <?php endforeach; ?>
+                  <?php elseif (!empty($userSkills)): ?>
                     <?php foreach ($userSkills as $skill): ?>
                       <span class="badge bg-primary me-2 mb-2"><?php echo htmlspecialchars($skill); ?></span>
                     <?php endforeach; ?>
                   <?php else: ?>
-                    <span class="text-muted">No skills extracted yet. Upload a resume to automatically extract your skills!</span>
+                    <span class="text-muted; text-color-white">No skills exracted. Add skills manually or upload a resume to automatically extract your skills!</span>
                   <?php endif; ?>
                   <span class="badge bg-secondary me-2 mb-2">+ Add Skill</span>
                 </div>
@@ -364,6 +394,17 @@ if ($result) {
                             <td>
                               <a href="jobs.php" class="btn btn-sm btn-outline-primary me-1">View</a>
                               <a href="#" class="btn btn-sm btn-outline-secondary disabled">Edit</a>
+                            </td>
+                          </tr>
+                        <?php endforeach; ?>
+                      <?php elseif (count($latestJobs) > 0) : ?>
+                        <?php foreach ($latestJobs as $job): ?>
+                          <tr>
+                            <td><?php echo htmlspecialchars($job['title']); ?></td>
+                            <td><?php echo htmlspecialchars($job['company_name']); ?></td>
+                            <td><?php echo htmlspecialchars(date('Y-m-d', strtotime($job['created_at']))); ?></td>
+                            <td>
+                              <a href="jobs.php" class="btn btn-sm btn-outline-primary">View</a>
                             </td>
                           </tr>
                         <?php endforeach; ?>

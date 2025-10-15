@@ -6,7 +6,113 @@
 
 class SkillExtractor {
     
-    // Common technical skills database
+    private $conn;
+    private $skillsCache = [];
+    private $categoriesCache = [];
+    
+    public function __construct($databaseConnection = null) {
+        if ($databaseConnection) {
+            $this->conn = $databaseConnection;
+            $this->loadSkillsFromDatabase();
+        } else {
+            // Fallback to hardcoded skills for backward compatibility
+            $this->loadHardcodedSkills();
+        }
+    }
+    
+    /**
+     * Load skills from database
+     */
+    private function loadSkillsFromDatabase() {
+        if (!$this->conn) {
+            $this->loadHardcodedSkills();
+            return;
+        }
+        
+        try {
+            // Load categories
+            $categoriesQuery = "SELECT id, name, parent_id FROM skill_categories ORDER BY name";
+            $result = $this->conn->query($categoriesQuery);
+            if ($result) {
+                while ($row = $result->fetch_assoc()) {
+                    $this->categoriesCache[$row['id']] = $row;
+                }
+            }
+            
+            // Load skills with aliases
+            $skillsQuery = "SELECT s.id, s.name, s.category_id, s.aliases, c.name as category_name 
+                           FROM skills s 
+                           JOIN skill_categories c ON s.category_id = c.id 
+                           ORDER BY s.popularity_score DESC";
+            $result = $this->conn->query($skillsQuery);
+            if ($result) {
+                while ($row = $result->fetch_assoc()) {
+                    $this->skillsCache[$row['name']] = $row;
+                    
+                    // Add aliases to cache
+                    if ($row['aliases']) {
+                        $aliases = json_decode($row['aliases'], true);
+                        if (is_array($aliases)) {
+                            foreach ($aliases as $alias) {
+                                $this->skillsCache[$alias] = $row;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            // Fallback to hardcoded skills if database fails
+            $this->loadHardcodedSkills();
+        }
+    }
+    
+    /**
+     * Fallback to hardcoded skills
+     */
+    private function loadHardcodedSkills() {
+        $this->skillsCache = [
+            // Programming Languages
+            'PHP', 'JavaScript', 'Python', 'Java', 'C#', 'C++', 'C', 'Ruby', 'Go', 'Rust', 'Swift', 'Kotlin', 'Scala', 'R', 'MATLAB', 'Perl', 'Lua', 'Dart', 'TypeScript',
+            
+            // Web Technologies
+            'HTML', 'CSS', 'HTML5', 'CSS3', 'Bootstrap', 'Tailwind CSS', 'Sass', 'Less', 'jQuery', 'React', 'Angular', 'Vue.js', 'Node.js', 'Express.js', 'Laravel', 'Symfony', 'CodeIgniter', 'Django', 'Flask', 'Spring', 'ASP.NET', 'Ruby on Rails',
+            
+            // Databases
+            'MySQL', 'PostgreSQL', 'MongoDB', 'SQLite', 'Oracle', 'SQL Server', 'Redis', 'Elasticsearch', 'Cassandra', 'DynamoDB', 'Firebase', 'MariaDB',
+            
+            // Cloud & DevOps
+            'AWS', 'Azure', 'Google Cloud', 'Docker', 'Kubernetes', 'Jenkins', 'GitLab CI', 'GitHub Actions', 'Terraform', 'Ansible', 'Chef', 'Puppet', 'Vagrant',
+            
+            // Mobile Development
+            'React Native', 'Flutter', 'Xamarin', 'Ionic', 'Cordova', 'PhoneGap', 'Android Studio', 'Xcode',
+            
+            // Data Science & Analytics
+            'Machine Learning', 'Deep Learning', 'TensorFlow', 'PyTorch', 'Scikit-learn', 'Pandas', 'NumPy', 'Matplotlib', 'Seaborn', 'Jupyter', 'Tableau', 'Power BI', 'Apache Spark', 'Hadoop',
+            
+            // Version Control & Tools
+            'Git', 'SVN', 'Mercurial', 'GitHub', 'GitLab', 'Bitbucket', 'Jira', 'Confluence', 'Slack', 'Trello', 'Asana', 'Figma', 'Sketch', 'Adobe XD',
+            
+            // Testing
+            'Unit Testing', 'Integration Testing', 'Selenium', 'Jest', 'PHPUnit', 'JUnit', 'Cypress', 'TestNG', 'Mocha', 'Chai',
+            
+            // Operating Systems
+            'Linux', 'Windows', 'macOS', 'Ubuntu', 'CentOS', 'Red Hat', 'Debian', 'Windows 10', 'Windows 11', 'Mac OS',
+            
+            // Cybersecurity & Security Tools
+            'McAfee', 'SIEM', 'EPO', 'NSM', 'FireEye', 'CMS', 'ETP', 'Wireshark', 'TCPView', 'OllyDbg', 'WinDbg', 'GBD', 'Nmap', 'Metasploit', 'Burp Suite', 'Nessus', 'OpenVAS', 'Snort', 'Suricata', 'Splunk', 'QRadar', 'ArcSight', 'Carbon Black', 'CrowdStrike', 'Palo Alto', 'Check Point', 'Fortinet', 'Cisco', 'Juniper',
+            
+            // Network & Infrastructure
+            'DNS', 'DHCP', 'Active Directory', 'LDAP', 'VPN', 'Firewall', 'Router', 'Switch', 'Load Balancer', 'Proxy', 'Mail Server', 'Web Server', 'Apache', 'Nginx', 'IIS', 'Tomcat', 'JBoss', 'WebLogic',
+            
+            // Google & Cloud Services
+            'Google Workspace', 'G Suite', 'Google Cloud Platform', 'GCP', 'Google Drive', 'Google Docs', 'Google Sheets', 'Google Slides', 'Gmail', 'Google Calendar', 'Google Meet', 'Google Chat',
+            
+            // Other Technologies
+            'REST API', 'GraphQL', 'SOAP', 'Microservices', 'Agile', 'Scrum', 'Kanban', 'CI/CD', 'DevOps', 'Blockchain', 'IoT', 'AR/VR', 'WebRTC', 'WebSocket', 'OAuth', 'JWT', 'SSL/TLS'
+        ];
+    }
+    
+    // Common technical skills database (legacy - kept for backward compatibility)
     private $skillsDatabase = [
         // Programming Languages
         'PHP', 'JavaScript', 'Python', 'Java', 'C#', 'C++', 'C', 'Ruby', 'Go', 'Rust', 'Swift', 'Kotlin', 'Scala', 'R', 'MATLAB', 'Perl', 'Lua', 'Dart', 'TypeScript',
@@ -232,21 +338,21 @@ class SkillExtractor {
         $extractedSkills = [];
         $text = strtolower($text);
         
-        // Check for each skill in the database
-        foreach ($this->skillsDatabase as $skill) {
-            $skillLower = strtolower($skill);
+        // Check for each skill in the cache
+        foreach ($this->skillsCache as $skillName => $skillData) {
+            $skillLower = strtolower($skillName);
             
             // Exact match
             if (strpos($text, $skillLower) !== false) {
-                $extractedSkills[] = $skill;
+                $extractedSkills[] = $skillName;
                 continue;
             }
             
             // Handle variations and common misspellings
-            $variations = $this->getSkillVariations($skill);
+            $variations = $this->getSkillVariations($skillName);
             foreach ($variations as $variation) {
                 if (strpos($text, strtolower($variation)) !== false) {
-                    $extractedSkills[] = $skill;
+                    $extractedSkills[] = $skillName;
                     break;
                 }
             }
@@ -254,6 +360,26 @@ class SkillExtractor {
         
         // Remove duplicates and return
         return array_unique($extractedSkills);
+    }
+    
+    /**
+     * Extract skills with category information
+     */
+    public function extractSkillsWithCategories($text) {
+        $extractedSkills = [];
+        $text = strtolower($text);
+        
+        foreach ($this->skillsCache as $skillName => $skillData) {
+            if (strpos($text, strtolower($skillName)) !== false) {
+                $extractedSkills[] = [
+                    'name' => $skillName,
+                    'category' => is_array($skillData) ? ($skillData['category_name'] ?? 'Other') : 'Other',
+                    'category_id' => is_array($skillData) ? ($skillData['category_id'] ?? 0) : 0
+                ];
+            }
+        }
+        
+        return $extractedSkills;
     }
     
     /**
@@ -388,12 +514,15 @@ class SkillExtractor {
             $deleteStmt->execute();
             $deleteStmt->close();
             
-            // Insert new skills
-            $insertStmt = $conn->prepare("INSERT INTO user_skills (user_id, skill_name, confidence_score, extracted_from) VALUES (?, ?, 1.00, 'resume')");
+            // Insert new skills and add to global skills database if not exists
+            $insertStmt = $conn->prepare("INSERT INTO user_skills (user_id, skill_name, confidence_score, extracted_from) VALUES (?, ?, 1.00, 'manual')");
             
             foreach ($skills as $skill) {
                 $insertStmt->bind_param('is', $userId, $skill);
                 $insertStmt->execute();
+                
+                // Add skill to global database if it doesn't exist
+                $this->addSkillToGlobalDatabase($skill, $conn);
             }
             
             $insertStmt->close();
@@ -403,6 +532,64 @@ class SkillExtractor {
             error_log("Error saving skills to database: " . $e->getMessage());
             return false;
         }
+    }
+    
+    /**
+     * Add skill to global skills database if it doesn't exist
+     */
+    private function addSkillToGlobalDatabase($skillName, $conn) {
+        try {
+            // Check if skill already exists in global database
+            $checkStmt = $conn->prepare("SELECT id FROM skills WHERE name = ?");
+            $checkStmt->bind_param('s', $skillName);
+            $checkStmt->execute();
+            $result = $checkStmt->get_result();
+            
+            if ($result->num_rows === 0) {
+                // Skill doesn't exist, add it to "Other" category
+                $otherCategoryId = $this->getOrCreateOtherCategory($conn);
+                
+                $insertStmt = $conn->prepare("INSERT INTO skills (name, category_id, popularity_score) VALUES (?, ?, 1)");
+                $insertStmt->bind_param('si', $skillName, $otherCategoryId);
+                $insertStmt->execute();
+                $insertStmt->close();
+                
+                // Refresh skills cache
+                $this->loadSkillsFromDatabase();
+            }
+            
+            $checkStmt->close();
+            return true;
+            
+        } catch (Exception $e) {
+            error_log("Error adding skill to global database: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Get or create "Other" category for new skills
+     */
+    private function getOrCreateOtherCategory($conn) {
+        // Check if "Other" category exists
+        $checkStmt = $conn->prepare("SELECT id FROM skill_categories WHERE name = 'Other'");
+        $checkStmt->execute();
+        $result = $checkStmt->get_result();
+        
+        if ($result->num_rows > 0) {
+            $categoryId = $result->fetch_assoc()['id'];
+            $checkStmt->close();
+            return $categoryId;
+        }
+        
+        // Create "Other" category
+        $insertStmt = $conn->prepare("INSERT INTO skill_categories (name, description) VALUES ('Other', 'User-added skills that don\'t fit into standard categories')");
+        $insertStmt->execute();
+        $categoryId = $conn->insert_id;
+        $insertStmt->close();
+        $checkStmt->close();
+        
+        return $categoryId;
     }
     
     /**
@@ -425,6 +612,69 @@ class SkillExtractor {
             
         } catch (Exception $e) {
             error_log("Error getting user skills: " . $e->getMessage());
+            return [];
+        }
+    }
+    
+    /**
+     * Add new skill to specific category
+     */
+    public function addSkillToCategory($skillName, $categoryName, $conn) {
+        try {
+            // Get category ID
+            $categoryStmt = $conn->prepare("SELECT id FROM skill_categories WHERE name = ?");
+            $categoryStmt->bind_param('s', $categoryName);
+            $categoryStmt->execute();
+            $categoryResult = $categoryStmt->get_result();
+            
+            if ($categoryResult->num_rows === 0) {
+                // Create category if it doesn't exist
+                $createCategoryStmt = $conn->prepare("INSERT INTO skill_categories (name) VALUES (?)");
+                $createCategoryStmt->bind_param('s', $categoryName);
+                $createCategoryStmt->execute();
+                $categoryId = $conn->insert_id;
+                $createCategoryStmt->close();
+            } else {
+                $categoryId = $categoryResult->fetch_assoc()['id'];
+            }
+            $categoryStmt->close();
+            
+            // Add skill to category
+            $skillStmt = $conn->prepare("INSERT IGNORE INTO skills (name, category_id, popularity_score) VALUES (?, ?, 1)");
+            $skillStmt->bind_param('si', $skillName, $categoryId);
+            $skillStmt->execute();
+            $skillStmt->close();
+            
+            // Refresh skills cache
+            $this->loadSkillsFromDatabase();
+            
+            return true;
+            
+        } catch (Exception $e) {
+            error_log("Error adding skill to category: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Get all available categories
+     */
+    public function getCategories($conn) {
+        try {
+            $stmt = $conn->prepare("SELECT id, name FROM skill_categories ORDER BY name");
+            $stmt->execute();
+            $result = $stmt->get_result();
+            
+            $categories = [];
+            while ($row = $result->fetch_assoc()) {
+                $categories[] = $row;
+            }
+            
+            $stmt->close();
+            return $categories;
+            
+        } catch (Exception $e) {
+            error_log("Error getting categories: " . $e->getMessage());
             return [];
         }
     }

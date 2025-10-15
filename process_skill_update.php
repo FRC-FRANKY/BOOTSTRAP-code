@@ -19,18 +19,8 @@ try {
         throw new Exception('User not found');
     }
     
-    // Get user ID from database
-    $userStmt = $conn->prepare('SELECT id FROM users WHERE email = ? LIMIT 1');
-    $userStmt->bind_param('s', $currentUserId);
-    $userStmt->execute();
-    $userResult = $userStmt->get_result();
-    
-    if (!$userRow = $userResult->fetch_assoc()) {
-        throw new Exception('User not found in database');
-    }
-    
-    $userId = $userRow['id'];
-    $userStmt->close();
+    // $currentUserId already contains the user ID from session
+    $userId = $currentUserId;
     
     $extractedSkills = [];
     $manualSkills = [];
