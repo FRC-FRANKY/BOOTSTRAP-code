@@ -11,6 +11,18 @@ require_once __DIR__ . '/db_connect.php';
 requireAuth();
 
 // Fetch latest jobs for listing
+$currentUserId = $_SESSION['user_id'] ?? null;
+$appliedJobIds = [];
+if ($currentUserId && is_numeric($currentUserId)) {
+  $stmt = $conn->prepare('SELECT job_id FROM applications WHERE applicant_id = ?');
+  if ($stmt) {
+    $stmt->bind_param('i', $currentUserId);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    while ($row = $res->fetch_assoc()) { $appliedJobIds[(int)$row['job_id']] = true; }
+    $stmt->close();
+  }
+}
 $jobs = [];
 $result = $conn->query("SELECT id, title, description, company_name, location, salary, required_skills, preferred_skills, created_at FROM jobs ORDER BY created_at DESC");
 if ($result) {
@@ -230,40 +242,6 @@ function getSkillsForDisplay(array $job): array {
                     <button type="submit" class="btn btn-primary w-100">Search</button>
                   </div>
                 </div>
-                
-                <!-- Advanced Filters -->
-                <div class="row mt-3" id="advancedFilters" style="display: none;">
-                  <div class="col-12">
-                    <div class="row g-3">
-                      <div class="col-12 col-md-3">
-                        <select class="form-select" id="experience">
-                          <option value="">Experience Level</option>
-                          <option value="entry">Entry Level</option>
-                          <option value="mid">Mid Level</option>
-                          <option value="senior">Senior Level</option>
-                        </select>
-                      </div>
-                      <div class="col-12 col-md-3">
-                        <select class="form-select" id="jobType">
-                          <option value="">Job Type</option>
-                          <option value="full-time">Full Time</option>
-                          <option value="part-time">Part Time</option>
-                          <option value="contract">Contract</option>
-                          <option value="remote">Remote</option>
-                        </select>
-                      </div>
-                      <div class="col-12 col-md-3">
-                        <button type="button" class="btn btn-warning w-100 fw-bold" id="clearFilters">
-                          <i class="fas fa-eraser me-2"></i>Clear All Filters
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="text-center mt-3">
-                  <button type="button" class="btn btn-link" id="toggleFilters">Advanced Filters</button>
-                </div>
               </form>
             </div>
           </div>
@@ -373,7 +351,14 @@ function getSkillsForDisplay(array $job): array {
                       <p class="text-success fw-bold mb-2">
                         <?php echo $job['salary'] !== null ? '$' . number_format((float)$job['salary'], 2) : 'Salary not specified'; ?>
                       </p>
-                      <a class="btn btn-primary btn-sm" href="#">Apply Now</a>
+                      <?php $alreadyApplied = isset($appliedJobIds[(int)$job['id']]); ?>
+                      <button class="btn btn-sm apply-btn btn-primary"
+                              data-job-id="<?php echo (int)$job['id']; ?>"
+                              data-job-title="<?php echo htmlspecialchars($job['title']); ?>"
+                              data-company="<?php echo htmlspecialchars($job['company_name']); ?>"
+                              <?php if ($alreadyApplied): ?> data-applied="1" aria-disabled="true" style="pointer-events: none; opacity: 1;" <?php endif; ?>>
+                        <?php echo $alreadyApplied ? 'Applied' : 'Apply Now'; ?>
+                       </button>
                     </div>
                   </div>
                 </div>

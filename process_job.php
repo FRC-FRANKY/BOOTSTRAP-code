@@ -46,6 +46,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
+    // Ensure the referencing user exists to avoid foreign key errors on fresh clones
+    $userCheck = $conn->prepare('SELECT id FROM users WHERE id = ? LIMIT 1');
+    if ($userCheck) {
+        $userCheck->bind_param('i', $postedBy);
+        if ($userCheck->execute()) {
+            $userCheck->store_result();
+            if ($userCheck->num_rows === 0) {
+                $_SESSION['job_error'] = 'Your account could not be found in this database. Please log out and log back in (or register) to recreate your account locally.';
+                header('Location: post-job.php');
+                exit();
+            }
+        }
+        $userCheck->close();
+    }
+
     // Prevent duplicates for same employer posting same company + title (case-insensitive)
     $dupSql = 'SELECT id FROM jobs WHERE posted_by = ? AND LOWER(company_name) = LOWER(?) AND LOWER(title) = LOWER(?) LIMIT 1';
     $dupStmt = $conn->prepare($dupSql);

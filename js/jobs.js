@@ -16,6 +16,74 @@ function initializeJobs() {
             salaryOption.textContent = 'Sort by Salary (High to Low)';
         }
     }
+
+    // Apply Now buttons
+    document.addEventListener('click', async function(e) {
+        const btn = e.target.closest('.apply-btn');
+        if (!btn) return;
+        e.preventDefault();
+        if (btn.dataset.applied === '1') {
+            showNotification('You already applied to this job.', 'info');
+            return;
+        }
+
+        const jobId = parseInt(btn.getAttribute('data-job-id'));
+        const title = btn.getAttribute('data-job-title') || 'Job';
+        const company = btn.getAttribute('data-company') || '';
+        const originalText = btn.textContent;
+        btn.textContent = 'Applying...';
+        try {
+            const formData = new FormData();
+            formData.append('job_id', jobId);
+            const res = await fetch('process_apply.php', { method: 'POST', body: formData });
+            if (!res.ok) {
+                throw new Error('Failed to apply');
+            }
+            // Try parse JSON; if HTML came back, treat as error
+            const text = await res.text();
+            let data;
+            try { data = JSON.parse(text); } catch (_) { throw new Error('Unexpected response'); }
+            if (!data.success) throw new Error(data.message || 'Failed to apply');
+
+            // Update all matching buttons (same job id)
+            const allBtns = document.querySelectorAll(`.apply-btn[data-job-id="${jobId}"]`);
+            allBtns.forEach(b => {
+                b.classList.add('btn-primary');
+                b.classList.remove('btn-secondary');
+                b.dataset.applied = '1';
+                b.textContent = 'Applied';
+                b.style.pointerEvents = 'none';
+            });
+
+            // Update localStorage for dashboard recent applications (client-side reflection)
+            const applications = JSON.parse(localStorage.getItem('jobApplications') || '[]');
+            const now = new Date().toISOString();
+            const entry = {
+                id: data.application_id || `${jobId}-${now}`,
+                jobId: jobId,
+                jobTitle: title,
+                company: company,
+                appliedDate: now,
+                status: 'Under Review',
+                matchScore: Math.floor(70 + Math.random()*25) // placeholder score
+            };
+            // avoid duplicates by jobId
+            const exists = applications.some(a => parseInt(a.jobId) === jobId);
+            if (!exists) applications.unshift(entry);
+            localStorage.setItem('jobApplications', JSON.stringify(applications.slice(0,10)));
+
+            if (window.Dashboard && typeof window.Dashboard.loadDashboardData === 'function') {
+                // If dashboard is open in same page lifecycle, refresh widgets
+                window.Dashboard.loadDashboardData();
+            }
+
+            showNotification(`Applied to ${title} at ${company}`, 'success');
+        } catch (err) {
+            console.error(err);
+            btn.textContent = originalText;
+            showNotification(err.message || 'Failed to apply', 'error');
+        }
+    });
 }
 
 function setupEventListeners() {

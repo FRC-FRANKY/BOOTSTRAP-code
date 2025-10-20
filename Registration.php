@@ -148,14 +148,15 @@ if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn'] === true) {
                                               placeholder="Tell us a little about yourself"></textarea>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="resume" class="form-label">Upload Resume (PDF only)</label>
+                                    <label for="resume" class="form-label">Upload Resume (PDF or DOCX)</label>
                                     <input type="file"
                                            class="form-control"
                                            id="resume" name="resume"
-                                           accept=".pdf,application/pdf"
+                                           accept=".pdf,.docx,.doc,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                                            required />
+                                    <div class="form-text">Supported formats: PDF, DOCX, DOC. We'll automatically extract your skills from your resume.</div>
                                     <div class="invalid-feedback">
-                                        Please upload your resume as a PDF file.
+                                        Please upload your resume as a PDF, DOCX, or DOC file.
                                     </div>
                                 </div>
                             </div>

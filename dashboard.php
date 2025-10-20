@@ -4,12 +4,30 @@ session_start();
 // Include authentication check
 require_once 'check_auth.php';
 require_once __DIR__ . '/db_connect.php';
+require_once __DIR__ . '/skill_extractor.php';
 
 // Require authentication to view this page
 requireAuth();
 
 // Prepare jobs for dashboards
 $currentUserId = $_SESSION['user_id'] ?? null;
+
+// Get user skills for job seekers
+$userSkills = [];
+$userSkillsWithCategories = [];
+if ($currentUserId) {
+    // $currentUserId already contains the user ID from session
+    $skillExtractor = new SkillExtractor($conn);
+    $userSkills = $skillExtractor->getUserSkills($currentUserId, $conn);
+    // Sanitize legacy/bad data: drop numeric-only or empty entries
+    $userSkills = array_values(array_filter($userSkills, function($s){
+      $s = trim((string)$s);
+      return $s !== '' && !is_numeric($s);
+    }));
+    
+    // Get skills with categories for enhanced display
+    $userSkillsWithCategories = $skillExtractor->extractSkillsWithCategories(implode(' ', $userSkills));
+}
 
 // Employer: jobs posted by current user
 $employerJobs = [];
@@ -32,6 +50,36 @@ $result = $conn->query('SELECT id, title, company_name, location, IFNULL(created
 if ($result) {
   while ($row = $result->fetch_assoc()) {
     $latestJobs[] = $row;
+  }
+}
+
+// Recent applications for current user
+$recentApplications = [];
+$applicationsCount = 0;
+if ($currentUserId) {
+  $stmt = $conn->prepare('SELECT a.id, a.applied_at, IFNULL(a.status, \'Pending\') AS app_status, j.title, j.company_name, j.required_skills
+                          FROM applications a
+                          JOIN jobs j ON j.id = a.job_id
+                          WHERE a.applicant_id = ?
+                          ORDER BY a.applied_at DESC
+                          LIMIT 10');
+  if ($stmt) {
+    $stmt->bind_param('i', $currentUserId);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    while ($row = $res->fetch_assoc()) {
+      $recentApplications[] = $row;
+    }
+    $stmt->close();
+  }
+  // Count total applications for stats
+  $cnt = $conn->prepare('SELECT COUNT(*) AS c FROM applications WHERE applicant_id = ?');
+  if ($cnt) {
+    $cnt->bind_param('i', $currentUserId);
+    $cnt->execute();
+    $cRes = $cnt->get_result()->fetch_assoc();
+    $applicationsCount = (int)($cRes['c'] ?? 0);
+    $cnt->close();
   }
 }
 ?>
@@ -94,6 +142,9 @@ if ($result) {
           <?php if ($role === 'admin') : ?>
             <li class="nav-item"><a class="nav-link" href="user-management.php">Users</a></li>
           <?php endif; ?>
+          <?php if ($role === 'employer' || $role === 'admin') : ?>
+            <li class="nav-item"><a class="nav-link" href="view_resume.php">View Resumes</a></li>
+          <?php endif; ?>
           <li class="nav-item"><a class="nav-link" href="user-profile.php">Profile</a></li>
         </ul>
         </div>
@@ -149,7 +200,7 @@ if ($result) {
             <div class="card stat-card">
               <div class="card-body text-center">
                 <div class="stat-icon mb-2">📊</div>
-                <h3 class="stat-number" id="applicationsCount">12</h3>
+                <h3 class="stat-number" id="applicationsCount" data-server-rendered="true"><?php echo (int)$applicationsCount; ?></h3>
                 <p class="stat-label">Applications</p>
               </div>
             </div>
@@ -191,18 +242,57 @@ if ($result) {
                 <h5 class="mb-0">Your Skills Profile</h5>
               </div>
               <div class="card-body">
-                <div class="skills-container mb-3">
-                  <span class="badge bg-primary me-2 mb-2">JavaScript</span>
-                  <span class="badge bg-primary me-2 mb-2">React</span>
-                  <span class="badge bg-primary me-2 mb-2">Node.js</span>
-                  <span class="badge bg-primary me-2 mb-2">Python</span>
-                  <span class="badge bg-primary me-2 mb-2">SQL</span>
-                  <span class="badge bg-secondary me-2 mb-2">+ Add Skill</span>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h6 class="mb-0 text-white-50">Grouped by category</h6>
+                  <button class="btn btn-light btn-sm rounded-pill fw-semibold" onclick="showSkillUpdateModal()">+ Add Skill</button>
                 </div>
-                <div class="progress mb-3">
-                  <div class="progress-bar" role="progressbar" style="width: 85%">Profile Complete: 85%</div>
+
+                <div class="skills-container" style="max-height: 260px; overflow: auto;">
+                  <?php if (!empty($userSkillsWithCategories)): ?>
+                    <?php 
+                      // Group skills by category and sort categories alphabetically
+                      $skillsByCategory = [];
+                      foreach ($userSkillsWithCategories as $skill) {
+                        $category = $skill['category'];
+                        if (!isset($skillsByCategory[$category])) {
+                          $skillsByCategory[$category] = [];
+                        }
+                        $skillsByCategory[$category][] = $skill['name'];
+                      }
+                      ksort($skillsByCategory);
+                    ?>
+                    <?php foreach ($skillsByCategory as $category => $skills): ?>
+                      <div class="mb-2">
+                        <div class="px-3 py-2 bg-dark bg-opacity-25 border border-secondary rounded d-flex justify-content-between align-items-center">
+                          <span class="fw-semibold text-white"><?php echo htmlspecialchars($category); ?></span>
+                          <span class="badge bg-secondary text-light border-0"><?php echo count($skills); ?></span>
+                        </div>
+                        <div class="pt-2 px-1">
+                          <?php foreach ($skills as $skill): ?>
+                            <span class="badge bg-primary me-1 mb-1"><?php echo htmlspecialchars($skill); ?></span>
+                          <?php endforeach; ?>
+                        </div>
+                      </div>
+                    <?php endforeach; ?>
+                  <?php else: ?>
+                    <div class="alert alert-info mb-0">
+                      No skills extracted. Add your skills here.
+                    </div>
+                  <?php endif; ?>
                 </div>
-                <button class="btn btn-outline-primary btn-sm">Update Skills</button>
+
+                <div class="progress my-3">
+                  <?php 
+                    $skillCount = count($userSkills);
+                    $completionPercentage = min(100, ($skillCount * 10)); // 10% per skill, max 100%
+                  ?>
+                  <div class="progress-bar" role="progressbar" style="width: <?php echo $completionPercentage; ?>%">
+                    Profile Complete: <?php echo $completionPercentage; ?>%
+                  </div>
+                </div>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-outline-primary btn-sm" onclick="showSkillUpdateModal()">Update Skills</button>
+                </div>
               </div>
             </div>
           </div>
@@ -250,23 +340,44 @@ if ($result) {
                         <th>Actions</th>
                       </tr>
                     </thead>
-                    <tbody id="applicationsTable">
-                      <tr>
-                        <td>Senior Frontend Developer</td>
-                        <td>TechCorp Inc.</td>
-                        <td>2024-01-15</td>
-                        <td><span class="badge bg-warning">Under Review</span></td>
-                        <td><span class="badge bg-success">95%</span></td>
-                        <td><button class="btn btn-sm btn-outline-primary">View</button></td>
-                      </tr>
-                      <tr>
-                        <td>Python Developer</td>
-                        <td>StartupXYZ</td>
-                        <td>2024-01-12</td>
-                        <td><span class="badge bg-info">Interview Scheduled</span></td>
-                        <td><span class="badge bg-warning">75%</span></td>
-                        <td><button class="btn btn-sm btn-outline-primary">View</button></td>
-                      </tr>
+                    <tbody id="applicationsTable" data-server-rendered="true">
+                      <?php if (count($recentApplications) > 0): ?>
+                        <?php foreach ($recentApplications as $app): ?>
+                          <?php 
+                            // Match score: overlap of user's skills and job required_skills
+                            $reqCsv = $app['required_skills'] ?? '';
+                            $reqList = array_values(array_filter(array_map('trim', explode(',', (string)$reqCsv))));
+                            $userSet = array_map('strtolower', $userSkills);
+                            $reqSet = array_map('strtolower', $reqList);
+                            $overlap = 0;
+                            foreach ($reqSet as $r) { if ($r !== '' && in_array($r, $userSet, true)) { $overlap++; } }
+                            $den = max(count($reqSet), 1);
+                            $score = (int) round(($overlap / $den) * 100);
+                            $scoreColor = $score >= 90 ? 'success' : ($score >= 80 ? 'warning' : ($score >= 70 ? 'info' : 'secondary'));
+                            $status = trim((string)($app['app_status'] ?? ''));
+                            if ($status === '') { $status = 'Pending'; }
+                            $statusColor = (
+                              $status==='Under Review' ? 'warning' : (
+                              $status==='Interview Scheduled' ? 'info' : (
+                              $status==='Hired' ? 'success' : (
+                              $status==='Rejected' ? 'danger' : (
+                              $status==='Pending' ? 'secondary' : 'secondary'))))
+                            );
+                          ?>
+                          <tr>
+                            <td><?php echo htmlspecialchars($app['title']); ?></td>
+                            <td><?php echo htmlspecialchars($app['company_name']); ?></td>
+                            <td><?php echo htmlspecialchars(date('Y-m-d', strtotime($app['applied_at']))); ?></td>
+                            <td><span class="badge bg-<?php echo $statusColor; ?>"><?php echo htmlspecialchars($status); ?></span></td>
+                            <td><span class="badge bg-<?php echo $scoreColor; ?>"><?php echo $score; ?>%</span></td>
+                            <td><button class="btn btn-sm btn-outline-primary">View</button></td>
+                          </tr>
+                        <?php endforeach; ?>
+                      <?php else: ?>
+                        <tr>
+                          <td colspan="6" class="text-center text-muted py-4">No applications yet. <a href="jobs.php">Start applying for jobs!</a></td>
+                        </tr>
+                      <?php endif; ?>
                     </tbody>
                   </table>
                 </div>
@@ -350,17 +461,6 @@ if ($result) {
                             </td>
                           </tr>
                         <?php endforeach; ?>
-                      <?php elseif (count($latestJobs) > 0) : ?>
-                        <?php foreach ($latestJobs as $job): ?>
-                          <tr>
-                            <td><?php echo htmlspecialchars($job['title']); ?></td>
-                            <td><?php echo htmlspecialchars($job['company_name']); ?></td>
-                            <td><?php echo htmlspecialchars(date('Y-m-d', strtotime($job['created_at']))); ?></td>
-                            <td>
-                              <a href="jobs.php" class="btn btn-sm btn-outline-primary">View</a>
-                            </td>
-                          </tr>
-                        <?php endforeach; ?>
                       <?php else: ?>
                         <tr><td colspan="4" class="text-muted">No jobs posted yet.</td></tr>
                       <?php endif; ?>
@@ -374,6 +474,36 @@ if ($result) {
       </div>
     </div>
   </section>
+
+  <!-- Skill Update Modal -->
+  <div class="modal fade" id="skillUpdateModal" tabindex="-1" aria-labelledby="skillUpdateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="skillUpdateModalLabel">Update Your Skills</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="skillUpdateForm" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label for="newResume" class="form-label">Upload New Resume</label>
+              <input type="file" class="form-control" id="newResume" name="resume" accept=".pdf,.docx,.doc,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+              <div class="form-text">Upload a new resume to automatically extract and update your skills.</div>
+            </div>
+            <div class="mb-3">
+              <label for="manualSkills" class="form-label">Or Add Skills Manually</label>
+              <input type="text" class="form-control" id="manualSkills" name="manualSkills" placeholder="e.g., JavaScript, React, Python">
+              <div class="form-text">Separate multiple skills with commas.</div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="updateSkills()">Update Skills</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Footer -->
   <footer class="footer py-4">
@@ -396,5 +526,76 @@ if ($result) {
   <script src="js/role-control.js"></script>
   
   <script src="js/dashboard.js"></script>
+  
+  <script>
+    // Skill update modal functions
+    function showSkillUpdateModal() {
+      const modal = new bootstrap.Modal(document.getElementById('skillUpdateModal'));
+      modal.show();
+    }
+    
+    function updateSkills() {
+      const form = document.getElementById('skillUpdateForm');
+      const formData = new FormData(form);
+      
+      // Show loading state
+      const updateBtn = document.querySelector('#skillUpdateModal .btn-primary');
+      const originalText = updateBtn.textContent;
+      updateBtn.textContent = 'Updating...';
+      updateBtn.disabled = true;
+      
+      fetch('process_skill_update.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Show success message
+          showNotification('Skills updated successfully!', 'success');
+          
+          // Close modal
+          const modal = bootstrap.Modal.getInstance(document.getElementById('skillUpdateModal'));
+          modal.hide();
+          
+          // Reload page to show updated skills
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        } else {
+          showNotification(data.message || 'Failed to update skills', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showNotification('An error occurred while updating skills', 'error');
+      })
+      .finally(() => {
+        // Reset button state
+        updateBtn.textContent = originalText;
+        updateBtn.disabled = false;
+      });
+    }
+    
+    function showNotification(message, type) {
+      // Create notification element
+      const notification = document.createElement('div');
+      notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+      notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+      notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.remove();
+        }
+      }, 5000);
+    }
+  </script>
 </body>
 </html>

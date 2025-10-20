@@ -170,14 +170,25 @@ function loadDashboardData() {
 }
 
 function loadJobSeekerData() {
-    // Load applications from localStorage
+    // Load applications from localStorage (client-side preview only)
     const applications = JSON.parse(localStorage.getItem('jobApplications') || '[]');
     
-    // Update stats
-    updateJobSeekerStats(applications);
+    // Update stats unless server rendered
+    const appsCountEl = document.getElementById('applicationsCount');
+    const serverCount = appsCountEl && appsCountEl.getAttribute('data-server-rendered') === 'true';
+    if (!serverCount) {
+        updateJobSeekerStats(applications);
+    }
     
-    // Update applications table
-    updateApplicationsTable(applications);
+    // Update applications table unless server rendered
+    const appsTbody = document.getElementById('applicationsTable');
+    const serverRenderedTable = appsTbody && appsTbody.getAttribute('data-server-rendered') === 'true';
+    if (!serverRenderedTable) {
+        updateApplicationsTable(applications);
+    } else {
+        // Clear stale client-side applications so new accounts don't see old data
+        try { localStorage.removeItem('jobApplications'); } catch (e) {}
+    }
     
     // Load recommended jobs
     loadRecommendedJobs();
@@ -189,8 +200,9 @@ function loadEmployerData() {
     if (serverRendered) {
         return;
     }
-    // Fallback: use localStorage demo data only if nothing rendered by server
-    const postedJobs = JSON.parse(localStorage.getItem('postedJobs') || '[]');
+    // No server data: clear any stale client demo data and show empty state
+    try { localStorage.removeItem('postedJobs'); } catch (e) {}
+    const postedJobs = [];
     updateEmployerStats(postedJobs);
     updateJobsTable(postedJobs);
 }
@@ -201,7 +213,9 @@ function updateJobSeekerStats(applications) {
     const avgMatchScore = document.getElementById('avgMatchScore');
     const responsesCount = document.getElementById('responsesCount');
     
-    if (applicationsCount) applicationsCount.textContent = applications.length;
+    if (applicationsCount && applicationsCount.getAttribute('data-server-rendered') !== 'true') {
+        applicationsCount.textContent = applications.length;
+    }
     if (matchesCount) matchesCount.textContent = applications.filter(app => app.matchScore > 80).length;
     
     if (avgMatchScore && applications.length > 0) {

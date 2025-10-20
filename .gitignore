@@ -1,23 +1,10 @@
-# Ignore Visual Studio folder
-.vs/
-*.user
-*.suo
-
-
-# Ignore build results
-bin/
-obj/
-
-# Ignore temporary files
+﻿/vendor/
+/uploads/
+/.env
+/.env.*
+env.php
 *.log
-*.tmp
-
-# Ignore OS files
+.vscode/
+.idea/
 Thumbs.db
 .DS_Store
-
-# Ignore Composer dependencies
-/vendor/
-
-.env
-

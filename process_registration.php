@@ -5,6 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/db_connect.php';
+require_once __DIR__ . '/skill_extractor.php';
 
 // Check if form was submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -25,11 +26,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $companyPhone = $_POST['companyPhone'] ?? null;
     $companyLinkedIn = $_POST['companyLinkedIn'] ?? null;
 
-    // Handle resume upload (prefer PDF)
+    // Handle resume upload (PDF, DOCX, DOC)
     $resumePath = null;
+    $extractedSkills = [];
+    
     if (isset($_FILES['resume']) && is_array($_FILES['resume']) && ($_FILES['resume']['error'] === UPLOAD_ERR_OK)) {
-        $allowedMime = ['application/pdf'];
-        $allowedExt = ['pdf'];
+        $allowedMime = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
+        $allowedExt = ['pdf', 'docx', 'doc'];
         $tmpPath = $_FILES['resume']['tmp_name'];
         $originalName = $_FILES['resume']['name'];
         $fileSize = (int)$_FILES['resume']['size'];
@@ -39,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mime = $finfo->file($tmpPath) ?: 'application/octet-stream';
 
         if (!in_array($ext, $allowedExt, true) || !in_array($mime, $allowedMime, true)) {
-            $_SESSION['registration_error'] = 'Please upload a valid PDF resume.';
+            $_SESSION['registration_error'] = 'Please upload a valid PDF, DOCX, or DOC resume.';
             header('Location: Registration.php');
             exit();
         }
@@ -70,10 +73,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Store relative path for serving later
         $resumePath = 'uploads/resumes/' . $uniqueName;
+        
+        // Extract skills from resume
+        try {
+            $skillExtractor = new SkillExtractor($conn);
+            $extractedSkills = $skillExtractor->processResume($destPath, $ext);
+        } catch (Exception $e) {
+            error_log("Skill extraction error: " . $e->getMessage());
+            // Continue registration even if skill extraction fails
+        }
+        
     } elseif (($role === 'employee') && (!isset($_FILES['resume']) || $_FILES['resume']['error'] !== UPLOAD_ERR_NO_FILE)) {
         // If employee role, require a resume when a file was attempted but failed
         if (!isset($_FILES['resume']) || $_FILES['resume']['error'] === UPLOAD_ERR_NO_FILE) {
-            $_SESSION['registration_error'] = 'Please upload your resume as PDF.';
+            $_SESSION['registration_error'] = 'Please upload your resume as PDF, DOCX, or DOC.';
             header('Location: Registration.php');
             exit();
         }
@@ -147,9 +160,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     
+    // Get the inserted user ID
+    $userId = $conn->insert_id;
+    
+    // Save extracted skills to database if any were found
+    if (!empty($extractedSkills) && $userId) {
+        try {
+            $skillExtractor = new SkillExtractor($conn);
+            $skillExtractor->saveSkillsToDatabase($userId, $extractedSkills, $conn);
+        } catch (Exception $e) {
+            error_log("Error saving skills during registration: " . $e->getMessage());
+            // Continue registration even if skill saving fails
+        }
+    }
+    
     // Store in SESSION
     $_SESSION['isLoggedIn'] = true;
-    $_SESSION['user_id'] = $email;
+    $_SESSION['user_id'] = $userId;
     $_SESSION['email'] = $email;
     $_SESSION['name'] = $fullname;
     $_SESSION['firstname'] = $firstname;
