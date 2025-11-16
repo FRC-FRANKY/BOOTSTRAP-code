@@ -46,7 +46,7 @@ try {
         }
 
         // Extract skills from resume
-        $skillExtractor = new SkillExtractor();
+        $skillExtractor = new SkillExtractor($conn);
         $extractedSkills = $skillExtractor->processResume($tmpPath, $ext);
     }
     
@@ -67,7 +67,7 @@ try {
     }
     
     // Save skills to database
-    $skillExtractor = new SkillExtractor();
+    $skillExtractor = new SkillExtractor($conn);
     $success = $skillExtractor->saveSkillsToDatabase($userId, $allSkills, $conn);
     
     if (!$success) {

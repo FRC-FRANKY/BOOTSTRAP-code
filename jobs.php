@@ -11,6 +11,54 @@ require_once __DIR__ . '/db_connect.php';
 requireAuth();
 
 // Fetch latest jobs for listing
+$currentUserId = $_SESSION['user_id'] ?? null;
+// Notifications (same logic as dashboard, minimal include-free)
+$notifUnreadCount = 0;
+$notifications = [];
+if ($currentUserId) {
+  $hasNotifTable = $conn->query("SHOW TABLES LIKE 'notifications'");
+  if ($hasNotifTable && $hasNotifTable->num_rows > 0) {
+    if ($s = $conn->prepare('SELECT COUNT(*) AS c FROM notifications WHERE user_id = ? AND (is_read = 0 OR is_read IS NULL)')) {
+      $s->bind_param('i', $currentUserId);
+      $s->execute();
+      $r = $s->get_result()->fetch_assoc();
+      $notifUnreadCount = (int)($r['c'] ?? 0);
+      $s->close();
+    }
+    if ($s = $conn->prepare('SELECT id, title, message, type, created_at, is_read FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 10')) {
+      $s->bind_param('i', $currentUserId);
+      $s->execute();
+      $rs = $s->get_result();
+      while ($row = $rs->fetch_assoc()) { $notifications[] = $row; }
+      $s->close();
+    }
+  }
+}
+$appliedJobIds = [];
+if ($currentUserId && is_numeric($currentUserId)) {
+  // Detect which applicant column exists
+  $hasApplicantCol = false; $hasUserIdCol = false;
+  if ($c = $conn->query("SHOW COLUMNS FROM applications LIKE 'applicant_id'")) { $hasApplicantCol = ($c->num_rows > 0); $c->close(); }
+  if ($c = $conn->query("SHOW COLUMNS FROM applications LIKE 'user_id'")) { $hasUserIdCol = ($c->num_rows > 0); $c->close(); }
+
+  if ($hasApplicantCol && $hasUserIdCol) {
+    $stmt = $conn->prepare("SELECT job_id FROM applications WHERE (applicant_id = ? OR user_id = ?) AND COALESCE(LOWER(status), 'pending') NOT IN ('cancelled','canceled','rejected','hired')");
+    if ($stmt) { $stmt->bind_param('ii', $currentUserId, $currentUserId); }
+  } elseif ($hasUserIdCol) {
+    $stmt = $conn->prepare("SELECT job_id FROM applications WHERE user_id = ? AND COALESCE(LOWER(status), 'pending') NOT IN ('cancelled','canceled','rejected','hired')");
+    if ($stmt) { $stmt->bind_param('i', $currentUserId); }
+  } else {
+    $stmt = $conn->prepare("SELECT job_id FROM applications WHERE applicant_id = ? AND COALESCE(LOWER(status), 'pending') NOT IN ('cancelled','canceled','rejected','hired')");
+    if ($stmt) { $stmt->bind_param('i', $currentUserId); }
+  }
+
+  if (isset($stmt) && $stmt) {
+    $stmt->execute();
+    $res = $stmt->get_result();
+    while ($row = $res->fetch_assoc()) { $appliedJobIds[(int)$row['job_id']] = true; }
+    $stmt->close();
+  }
+}
 $jobs = [];
 $result = $conn->query("SELECT id, title, description, company_name, location, salary, required_skills, preferred_skills, created_at FROM jobs ORDER BY created_at DESC");
 if ($result) {
@@ -124,6 +172,7 @@ function getSkillsForDisplay(array $job): array {
   <link rel="icon" type="image/svg+xml" href="Images/log.png" />
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
   <link href="css/home.css" rel="stylesheet">
   <link href="css/jobs.css" rel="stylesheet">
 </head>
@@ -133,9 +182,47 @@ function getSkillsForDisplay(array $job): array {
    <nav class="navbar navbar-light bg-light sticky-top shadow-sm navbar-glass">
     <div class="container">
       <a class="navbar-brand fw-bold" href="dashboard.php">JobFilter</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#navMenu" aria-controls="navMenu" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+      <div class="d-flex align-items-center">
+        <!-- Notification Bell (copied from dashboard.php) -->
+        <div class="dropdown me-3">
+          <a class="nav-link position-relative" href="#" role="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-bell fs-5"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+              <?php echo (int)$notifUnreadCount; ?>
+              <span class="visually-hidden">unread notifications</span>
+            </span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationDropdown">
+            <li><h6 class="dropdown-header">Notifications</h6></li>
+            <li><hr class="dropdown-divider"></li>
+            <?php if (count($notifications) === 0): ?>
+              <li class="notification-item">
+                <div class="dropdown-item text-muted">No notifications</div>
+              </li>
+            <?php else: ?>
+              <?php foreach ($notifications as $n): ?>
+                <li class="notification-item" data-notif-id="<?php echo (int)$n['id']; ?>">
+                  <div class="dropdown-item d-flex align-items-start justify-content-between">
+                    <div class="flex-shrink-0">
+                      <i class="bi bi-<?php echo ($n['type'] === 'danger' ? 'exclamation-circle text-danger' : ($n['type'] === 'success' ? 'check-circle text-success' : 'info-circle text-primary')); ?>"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-2 me-2">
+                      <p class="mb-0 fw-semibold"><?php echo htmlspecialchars($n['title'] ?? 'Notification'); ?></p>
+                      <small class="text-muted"><?php echo htmlspecialchars($n['message'] ?? ''); ?></small>
+                    </div>
+                    <button class="btn btn-sm btn-link text-muted p-0 notif-clear-btn" title="Clear" data-notif-id="<?php echo (int)$n['id']; ?>">
+                      <i class="bi bi-x-lg"></i>
+                    </button>
+                  </div>
+                </li>
+              <?php endforeach; ?>
+            <?php endif; ?>
+          </ul>
+        </div>
+        <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#navMenu" aria-controls="navMenu" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      </div>
       <div class="offcanvas offcanvas-end" tabindex="-1" id="navMenu" aria-labelledby="navMenuLabel">
         <div class="offcanvas-header">
           <h5 class="offcanvas-title" id="navMenuLabel">Menu</h5>
@@ -179,11 +266,11 @@ function getSkillsForDisplay(array $job): array {
   </nav>
 
   <!-- Search Section -->
-  <section class="py-5 bg-light">
+  <section class="py-5" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);">
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-12 col-lg-10">
-          <h1 class="text-center mb-4">Find Your Perfect Job Match</h1>
+          <h1 class="text-center mb-4 text-white">Find Your Perfect Job Match</h1>
           
           <!-- Search Form -->
           <div class="card shadow-sm">
@@ -339,7 +426,16 @@ function getSkillsForDisplay(array $job): array {
                       <p class="text-success fw-bold mb-2">
                         <?php echo $job['salary'] !== null ? '$' . number_format((float)$job['salary'], 2) : 'Salary not specified'; ?>
                       </p>
-                      <a class="btn btn-primary btn-sm" href="#">Apply Now</a>
+                      <?php $alreadyApplied = isset($appliedJobIds[(int)$job['id']]); ?>
+                      <button class="btn btn-sm apply-job-btn btn-primary"
+                              data-bs-toggle="modal"
+                              data-bs-target="#applicationModal"
+                              data-job-id="<?php echo (int)$job['id']; ?>"
+                              data-job-title="<?php echo htmlspecialchars($job['title']); ?>"
+                              data-company="<?php echo htmlspecialchars($job['company_name']); ?>"
+                              <?php if ($alreadyApplied): ?> data-applied="1" aria-disabled="true" style="pointer-events: none; opacity: 1;" <?php endif; ?>>
+                        <?php echo $alreadyApplied ? 'Applied' : 'Apply Now'; ?>
+                       </button>
                     </div>
                   </div>
                 </div>
@@ -387,5 +483,8 @@ function getSkillsForDisplay(array $job): array {
   <script src="js/role-control.js"></script>
   
   <script src="js/jobs.js"></script>
+  
+  <?php include __DIR__ . '/includes/application_modal.php'; ?>
+  <script src="js/job_application.js"></script>
 </body>
 </html>

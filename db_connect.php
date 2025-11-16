@@ -160,6 +160,30 @@ if ($jobsColPrefSkills && $jobsColPrefSkills->num_rows === 0) {
 }
 
 
+// 5.5) Create notifications table (for employer alerts, etc.)
+$createNotificationsSql = "
+CREATE TABLE IF NOT EXISTS notifications (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  message TEXT NULL,
+  type VARCHAR(50) NULL DEFAULT 'info',
+  reference_id INT UNSIGNED NULL,
+  reference_type VARCHAR(50) NULL,
+  is_read TINYINT(1) NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
+
+if (!$conn->query($createNotificationsSql)) {
+    die('Failed to ensure notifications table: ' . $conn->error);
+}
+
+// Optional: indexes for notifications
+$conn->query("CREATE INDEX IF NOT EXISTS idx_notifications_user_read ON notifications(user_id, is_read)");
+$conn->query("CREATE INDEX IF NOT EXISTS idx_notifications_created ON notifications(created_at)");
+
+
 // 6) Create applications table
 $createApplicationsSql = "
 CREATE TABLE IF NOT EXISTS applications (

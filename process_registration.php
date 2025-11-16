@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Extract skills from resume
         try {
-            $skillExtractor = new SkillExtractor();
+            $skillExtractor = new SkillExtractor($conn);
             $extractedSkills = $skillExtractor->processResume($destPath, $ext);
         } catch (Exception $e) {
             error_log("Skill extraction error: " . $e->getMessage());
@@ -166,7 +166,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Save extracted skills to database if any were found
     if (!empty($extractedSkills) && $userId) {
         try {
-            $skillExtractor = new SkillExtractor();
+            $skillExtractor = new SkillExtractor($conn);
             $skillExtractor->saveSkillsToDatabase($userId, $extractedSkills, $conn);
         } catch (Exception $e) {
             error_log("Error saving skills during registration: " . $e->getMessage());
@@ -176,7 +176,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Store in SESSION
     $_SESSION['isLoggedIn'] = true;
-    $_SESSION['user_id'] = $email;
+    $_SESSION['user_id'] = $userId;
     $_SESSION['email'] = $email;
     $_SESSION['name'] = $fullname;
     $_SESSION['firstname'] = $firstname;

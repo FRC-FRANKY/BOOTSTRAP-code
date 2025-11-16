@@ -4,6 +4,20 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeDashboard();
 });
 
+// Fetch employer stats (active jobs, total applicants) from server
+async function fetchEmployerStats() {
+    try {
+        const res = await fetch('get_employer_stats.php', { cache: 'no-store' });
+        const data = await res.json();
+        if (!res.ok || !data.success) return;
+        const a = data.data || {};
+        const activeJobsEl = document.getElementById('activeJobsCount');
+        const totalApplicantsEl = document.getElementById('totalApplicants');
+        if (activeJobsEl) activeJobsEl.textContent = (a.active_jobs ?? 0);
+        if (totalApplicantsEl) totalApplicantsEl.textContent = (a.total_applicants ?? 0);
+    } catch (_) {}
+}
+
 function initializeDashboard() {
     // Setup role switching
     setupRoleSwitching();
@@ -36,12 +50,38 @@ function initializeDashboard() {
     
     // Load initial data
     loadDashboardData();
+
+    // Also fetch employer stats if employer view is active
+    try {
+        const employerRadio = document.getElementById('employer');
+        if ((employerRadio && employerRadio.checked) || (document.getElementById('employerDashboard') && document.getElementById('employerDashboard').style.display !== 'none')) {
+            fetchEmployerStats();
+        }
+    } catch (e) {}
     
     // Setup interactive elements
     setupInteractiveElements();
     
     // Ensure navigation is visible
     ensureNavigationVisible();
+
+    // Periodically update employer stats when employer dashboard is visible
+    setInterval(() => {
+        const employerDash = document.getElementById('employerDashboard');
+        if (employerDash && employerDash.style.display !== 'none') {
+            fetchEmployerStats();
+        }
+    }, 30000);
+
+    // Update stats when tab becomes active
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            const employerDash = document.getElementById('employerDashboard');
+            if (employerDash && employerDash.style.display !== 'none') {
+                fetchEmployerStats();
+            }
+        }
+    });
 }
 
 function setupRoleSwitching() {
@@ -139,6 +179,7 @@ function showEmployerDashboard() {
         
         // Load employer data
         loadEmployerData();
+        fetchEmployerStats();
     }
 }
 
@@ -154,6 +195,7 @@ function setupRefreshButton() {
                 this.innerHTML = 'Refresh';
                 this.disabled = false;
                 showNotification('Dashboard refreshed successfully!', 'success');
+                fetchEmployerStats();
             }, 1500);
         });
     }
@@ -170,14 +212,25 @@ function loadDashboardData() {
 }
 
 function loadJobSeekerData() {
-    // Load applications from localStorage
+    // Load applications from localStorage (client-side preview only)
     const applications = JSON.parse(localStorage.getItem('jobApplications') || '[]');
     
-    // Update stats
-    updateJobSeekerStats(applications);
+    // Update stats unless server rendered
+    const appsCountEl = document.getElementById('applicationsCount');
+    const serverCount = appsCountEl && appsCountEl.getAttribute('data-server-rendered') === 'true';
+    if (!serverCount) {
+        updateJobSeekerStats(applications);
+    }
     
-    // Update applications table
-    updateApplicationsTable(applications);
+    // Update applications table unless server rendered
+    const appsTbody = document.getElementById('applicationsTable');
+    const serverRenderedTable = appsTbody && appsTbody.getAttribute('data-server-rendered') === 'true';
+    if (!serverRenderedTable) {
+        updateApplicationsTable(applications);
+    } else {
+        // Clear stale client-side applications so new accounts don't see old data
+        try { localStorage.removeItem('jobApplications'); } catch (e) {}
+    }
     
     // Load recommended jobs
     loadRecommendedJobs();
@@ -187,10 +240,12 @@ function loadEmployerData() {
     // If PHP already rendered the table, don't overwrite it.
     const serverRendered = document.querySelector('#jobsTable[data-server-rendered="true"]');
     if (serverRendered) {
+        fetchEmployerStats();
         return;
     }
-    // Fallback: use localStorage demo data only if nothing rendered by server
-    const postedJobs = JSON.parse(localStorage.getItem('postedJobs') || '[]');
+    // No server data: clear any stale client demo data and show empty state
+    try { localStorage.removeItem('postedJobs'); } catch (e) {}
+    const postedJobs = [];
     updateEmployerStats(postedJobs);
     updateJobsTable(postedJobs);
 }
@@ -201,7 +256,9 @@ function updateJobSeekerStats(applications) {
     const avgMatchScore = document.getElementById('avgMatchScore');
     const responsesCount = document.getElementById('responsesCount');
     
-    if (applicationsCount) applicationsCount.textContent = applications.length;
+    if (applicationsCount && applicationsCount.getAttribute('data-server-rendered') !== 'true') {
+        applicationsCount.textContent = applications.length;
+    }
     if (matchesCount) matchesCount.textContent = applications.filter(app => app.matchScore > 80).length;
     
     if (avgMatchScore && applications.length > 0) {
@@ -221,9 +278,9 @@ function updateEmployerStats(postedJobs) {
     const avgApplicantScore = document.getElementById('avgApplicantScore');
     const viewsCount = document.getElementById('viewsCount');
     
-    if (activeJobsCount) activeJobsCount.textContent = postedJobs.filter(job => job.status === 'active').length;
+    if (activeJobsCount && activeJobsCount.getAttribute('data-server-rendered') !== 'true') activeJobsCount.textContent = postedJobs.filter(job => job.status === 'active').length;
     
-    if (totalApplicants) {
+    if (totalApplicants && totalApplicants.getAttribute('data-server-rendered') !== 'true') {
         const totalApps = postedJobs.reduce((sum, job) => sum + (job.applicants || 0), 0);
         totalApplicants.textContent = totalApps;
     }

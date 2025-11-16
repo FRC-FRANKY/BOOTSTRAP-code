@@ -4,6 +4,11 @@
  * Extracts skills from PDF and DOCX resume files
  */
 
+// Composer autoload for external libraries (e.g., smalot/pdfparser)
+if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+    require_once __DIR__ . '/vendor/autoload.php';
+}
+
 class SkillExtractor {
     
     private $conn;
@@ -70,7 +75,7 @@ class SkillExtractor {
      * Fallback to hardcoded skills
      */
     private function loadHardcodedSkills() {
-        $this->skillsCache = [
+        $skills = [
             // Programming Languages
             'PHP', 'JavaScript', 'Python', 'Java', 'C#', 'C++', 'C', 'Ruby', 'Go', 'Rust', 'Swift', 'Kotlin', 'Scala', 'R', 'MATLAB', 'Perl', 'Lua', 'Dart', 'TypeScript',
             
@@ -110,6 +115,16 @@ class SkillExtractor {
             // Other Technologies
             'REST API', 'GraphQL', 'SOAP', 'Microservices', 'Agile', 'Scrum', 'Kanban', 'CI/CD', 'DevOps', 'Blockchain', 'IoT', 'AR/VR', 'WebRTC', 'WebSocket', 'OAuth', 'JWT', 'SSL/TLS'
         ];
+        // Build associative cache with names as keys and minimal metadata so display never shows numeric indexes
+        $this->skillsCache = [];
+        foreach ($skills as $name) {
+            $this->skillsCache[$name] = [
+                'id' => 0,
+                'name' => $name,
+                'category_id' => 0,
+                'category_name' => 'Other'
+            ];
+        }
     }
     
     // Common technical skills database (legacy - kept for backward compatibility)
@@ -170,8 +185,7 @@ class SkillExtractor {
                 }
             }
             
-            // Method 2: Use the existing PDF parser
-            require_once __DIR__ . '/vendor/smalot/pdfparser/Parser.php';
+            // Method 2: Use the Composer-installed PDF parser
             $parser = new \Smalot\PdfParser\Parser();
             $pdf = $parser->parseFile($filePath);
             $text = $pdf->getText();
@@ -338,17 +352,17 @@ class SkillExtractor {
         $extractedSkills = [];
         $text = strtolower($text);
         
-        // Check for each skill in the cache
-        foreach ($this->skillsCache as $skillName => $skillData) {
+        foreach ($this->skillsCache as $key => $value) {
+            // Support both DB-backed arrays and simple string lists
+            $skillName = is_array($value) ? ($value['name'] ?? (is_string($key) ? $key : (string)$value))
+                                          : (is_string($value) ? $value : (string)$key);
             $skillLower = strtolower($skillName);
             
-            // Exact match
-            if (strpos($text, $skillLower) !== false) {
+            if ($skillLower !== '' && strpos($text, $skillLower) !== false) {
                 $extractedSkills[] = $skillName;
                 continue;
             }
             
-            // Handle variations and common misspellings
             $variations = $this->getSkillVariations($skillName);
             foreach ($variations as $variation) {
                 if (strpos($text, strtolower($variation)) !== false) {
@@ -357,9 +371,7 @@ class SkillExtractor {
                 }
             }
         }
-        
-        // Remove duplicates and return
-        return array_unique($extractedSkills);
+        return array_values(array_unique($extractedSkills));
     }
     
     /**
@@ -369,16 +381,18 @@ class SkillExtractor {
         $extractedSkills = [];
         $text = strtolower($text);
         
-        foreach ($this->skillsCache as $skillName => $skillData) {
+        foreach ($this->skillsCache as $key => $value) {
+            $skillName = is_array($value) ? ($value['name'] ?? (is_string($key) ? $key : (string)$value))
+                                          : (is_string($value) ? $value : (string)$key);
+            if ($skillName === '') { continue; }
             if (strpos($text, strtolower($skillName)) !== false) {
                 $extractedSkills[] = [
                     'name' => $skillName,
-                    'category' => is_array($skillData) ? ($skillData['category_name'] ?? 'Other') : 'Other',
-                    'category_id' => is_array($skillData) ? ($skillData['category_id'] ?? 0) : 0
+                    'category' => is_array($value) ? ($value['category_name'] ?? 'Other') : 'Other',
+                    'category_id' => is_array($value) ? ($value['category_id'] ?? 0) : 0
                 ];
             }
         }
-        
         return $extractedSkills;
     }
     
@@ -502,27 +516,33 @@ class SkillExtractor {
     /**
      * Save extracted skills to database
      */
-    public function saveSkillsToDatabase($userId, $skills, $conn) {
+    public function saveSkillsToDatabase($userId, $skills, $conn, $replace = false) {
         if (empty($skills) || !$conn) {
             return false;
         }
         
         try {
-            // Clear existing skills for this user
-            $deleteStmt = $conn->prepare("DELETE FROM user_skills WHERE user_id = ?");
-            $deleteStmt->bind_param('i', $userId);
-            $deleteStmt->execute();
-            $deleteStmt->close();
+            // Optionally clear existing skills for this user
+            if ($replace === true) {
+                $deleteStmt = $conn->prepare("DELETE FROM user_skills WHERE user_id = ?");
+                $deleteStmt->bind_param('i', $userId);
+                $deleteStmt->execute();
+                $deleteStmt->close();
+            }
             
             // Insert new skills and add to global skills database if not exists
-            $insertStmt = $conn->prepare("INSERT INTO user_skills (user_id, skill_name, confidence_score, extracted_from) VALUES (?, ?, 1.00, 'manual')");
+            $insertStmt = $conn->prepare("INSERT IGNORE INTO user_skills (user_id, skill_name, confidence_score, extracted_from) VALUES (?, ?, 1.00, 'manual')");
             
             foreach ($skills as $skill) {
-                $insertStmt->bind_param('is', $userId, $skill);
+                $skillName = trim((string)$skill);
+                if ($skillName === '' || is_numeric($skillName)) {
+                    continue; // skip bad entries caused by previous extraction
+                }
+                $insertStmt->bind_param('is', $userId, $skillName);
                 $insertStmt->execute();
                 
                 // Add skill to global database if it doesn't exist
-                $this->addSkillToGlobalDatabase($skill, $conn);
+                $this->addSkillToGlobalDatabase($skillName, $conn);
             }
             
             $insertStmt->close();
