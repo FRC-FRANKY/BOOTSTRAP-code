@@ -285,7 +285,7 @@ if ($currentUserId) {
             <div class="card stat-card">
               <div class="card-body text-center">
                 <div class="stat-icon mb-2">📈</div>
-                <h3 class="stat-number" id="avgMatchScore">85%</h3>
+                <h3 class="stat-number" id="avgMatchScore">100%</h3>
                 <p class="stat-label">Avg. Match Score</p>
               </div>
             </div>
