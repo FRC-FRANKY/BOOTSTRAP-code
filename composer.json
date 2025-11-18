@@ -17,6 +17,7 @@
     "minimum-stability": "stable",
     "require": {
         "phpmailer/phpmailer": "^6.11",
-        "smalot/pdfparser": "*"
+        "smalot/pdfparser": "^2.12",
+        "phpoffice/phpspreadsheet": "^5.1"
     }
 }
