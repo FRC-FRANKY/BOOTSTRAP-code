@@ -294,7 +294,7 @@ if ($currentUserId) {
             <div class="card stat-card">
               <div class="card-body text-center">
                 <div class="stat-icon mb-2">📧</div>
-                <h3 class="stat-number" id="responsesCount">0</h3>
+                <h3 class="stat-number" id="responsesCount">1M</h3>
                 <p class="stat-label">Responses</p>
               </div>
             </div>
